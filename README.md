@@ -1,5 +1,6 @@
 # Treblle for Spring Boot
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.treblle/treblle-spring-boot-starter/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.treblle/treblle-spring-boot-starter)
 [![MIT Licence](https://img.shields.io/npm/l/treblle)](LICENSE.md)
 
 Treblle makes it super easy to understand what’s going on with your APIs and the apps that use them. Just by adding Treblle to your API out of the box, you get:
