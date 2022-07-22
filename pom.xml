@@ -5,7 +5,7 @@
 
 	<groupId>com.treblle</groupId>
 	<artifactId>treblle-spring-boot-starter</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 
 	<name>treblle-spring-boot-starter</name>
 	<description>Official Treblle Starter for Spring Boot</description>
