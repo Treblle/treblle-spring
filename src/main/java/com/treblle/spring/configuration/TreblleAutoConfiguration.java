@@ -28,8 +28,7 @@ public class TreblleAutoConfiguration {
   }
 
   @Bean
-  public FilterRegistrationBean<TreblleFilter> filterRegistration(
-      TreblleProperties properties, TreblleService treblleService) {
+  public FilterRegistrationBean<TreblleFilter> filterRegistration(TreblleProperties properties, TreblleService treblleService) {
     final FilterRegistrationBean<TreblleFilter> registrationBean = new FilterRegistrationBean<>();
     registrationBean.setFilter(new TreblleFilter(treblleService));
     registrationBean.setOrder(Ordered.LOWEST_PRECEDENCE - 10); // Similar to HttpTraceFilter

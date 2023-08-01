@@ -2,17 +2,18 @@ package com.treblle.spring;
 
 import com.treblle.spring.dto.TrebllePayload;
 import com.treblle.spring.service.TreblleService;
-import java.io.IOException;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+
+import java.io.IOException;
 
 public class TreblleFilter extends OncePerRequestFilter {
 
@@ -28,26 +29,20 @@ public class TreblleFilter extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
     String contentType = request.getContentType();
     if (contentType != null && !MediaType.APPLICATION_JSON_VALUE.equals(contentType)) {
-      log.debug(
-          "Attempted to intercept request but content type was not valid. Treblle only works on JSON API's.");
+      log.debug("Attempted to intercept request but content type was not valid. Treblle only works on JSON API's.");
       return true;
     }
     return super.shouldNotFilter(request);
   }
 
   @Override
-  protected void doFilterInternal(
-      HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse,
-      FilterChain filterChain)
-      throws ServletException, IOException {
-    final ContentCachingRequestWrapper cachingRequest =
-        new ContentCachingRequestWrapper(httpServletRequest);
-    final ContentCachingResponseWrapper cachingResponse =
-        new ContentCachingResponseWrapper(httpServletResponse);
+  protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
+                                                           FilterChain filterChain) throws ServletException, IOException {
+
+    final ContentCachingRequestWrapper cachingRequest = new ContentCachingRequestWrapper(servletRequest);
+    final ContentCachingResponseWrapper cachingResponse = new ContentCachingResponseWrapper(servletResponse);
 
     Exception potentialException = null;
-
     final long start = System.currentTimeMillis();
 
     try {
@@ -61,9 +56,7 @@ public class TreblleFilter extends OncePerRequestFilter {
       final byte[] responseBody = cachingResponse.getContentAsByteArray();
       cachingResponse.copyBodyToResponse(); // Important
       try {
-        TrebllePayload payload =
-            service.createPayload(
-                cachingRequest, cachingResponse, potentialException, responseTimeInMillis);
+        TrebllePayload payload = service.createPayload(cachingRequest, cachingResponse, potentialException, responseTimeInMillis);
         service.maskAndSendPayload(payload, requestBody, responseBody, potentialException);
       } catch (Exception exception) {
         log.error("An error occurred while sending data to Treblle.", exception);
