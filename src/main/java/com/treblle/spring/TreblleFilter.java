@@ -19,10 +19,10 @@ public class TreblleFilter extends OncePerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(TreblleFilter.class);
 
-  private final TreblleService service;
+  private final TreblleService treblleService;
 
-  public TreblleFilter(TreblleService service) {
-    this.service = service;
+  public TreblleFilter(TreblleService treblleService) {
+    this.treblleService = treblleService;
   }
 
   @Override
@@ -56,8 +56,8 @@ public class TreblleFilter extends OncePerRequestFilter {
       final byte[] responseBody = cachingResponse.getContentAsByteArray();
       cachingResponse.copyBodyToResponse(); // Important
       try {
-        TrebllePayload payload = service.createPayload(cachingRequest, cachingResponse, potentialException, responseTimeInMillis);
-        service.maskAndSendPayload(payload, requestBody, responseBody, potentialException);
+        TrebllePayload payload = treblleService.createPayload(cachingRequest, cachingResponse, potentialException, responseTimeInMillis);
+        treblleService.maskAndSendPayload(payload, requestBody, responseBody, potentialException);
       } catch (Exception exception) {
         log.error("An error occurred while sending data to Treblle.", exception);
       }

@@ -37,15 +37,14 @@ public class TreblleServiceImpl implements TreblleService {
 
   private static final Logger log = LoggerFactory.getLogger(TreblleServiceImpl.class);
 
-  private static final DateTimeFormatter DATE_TIME_FORMATTER =
-          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private static final String TREBLLE_API_ENDPOINT = "https://rocknrolla.treblle.com";
   private static final String TREBLLE_API_KEY_HEADER = "x-api-key";
 
   @Autowired private Environment environment;
 
-  @Autowired private TreblleProperties properties;
+  @Autowired private TreblleProperties treblleProperties;
 
   @Autowired private ObjectMapper objectMapper;
 
@@ -53,19 +52,19 @@ public class TreblleServiceImpl implements TreblleService {
 
   @Autowired private RestTemplateBuilder restTemplateBuilder;
 
-  private RestTemplate client;
+  private RestTemplate restTemplate;
 
   @PostConstruct
   private void init() {
-    if (!StringUtils.hasLength(properties.getApiKey())) {
+    if (!StringUtils.hasLength(treblleProperties.getApiKey())) {
       throw new IllegalStateException("Treblle API key is required.");
     }
 
-    if (!StringUtils.hasLength(properties.getProjectId())) {
+    if (!StringUtils.hasLength(treblleProperties.getProjectId())) {
       throw new IllegalStateException("Treblle Project ID is required.");
     }
 
-    this.client =
+    this.restTemplate =
             restTemplateBuilder
                     .setConnectTimeout(Duration.ofSeconds(1))
                     .setReadTimeout(Duration.ofSeconds(1))
@@ -121,8 +120,8 @@ public class TreblleServiceImpl implements TreblleService {
     data.setResponse(response);
 
     final TrebllePayload payload = new TrebllePayload();
-    payload.setApiKey(properties.getApiKey());
-    payload.setProjectId(properties.getProjectId());
+    payload.setApiKey(treblleProperties.getApiKey());
+    payload.setProjectId(treblleProperties.getProjectId());
     payload.setData(data);
 
     return payload;
@@ -167,11 +166,11 @@ public class TreblleServiceImpl implements TreblleService {
 
       final HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
-      headers.set(TREBLLE_API_KEY_HEADER, properties.getApiKey());
+      headers.set(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
       final HttpEntity<TrebllePayload> requestEntity = new HttpEntity<>(payload, headers);
 
       try {
-        client.postForEntity(TREBLLE_API_ENDPOINT, requestEntity, Void.class);
+        restTemplate.postForEntity(TREBLLE_API_ENDPOINT, requestEntity, Void.class);
       } catch (RestClientException exception) {
         log.error("An error occurred while sending network request to Treblle.", exception);
       }
