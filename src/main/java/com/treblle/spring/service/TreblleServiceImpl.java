@@ -96,8 +96,7 @@ public class TreblleServiceImpl implements TreblleService {
     request.setUserAgent(httpRequest.getHeader(HttpHeaders.USER_AGENT));
     request.setMethod(httpRequest.getMethod());
     request.setUrl(ServletUriComponentsBuilder.fromRequestUri(httpRequest).toUriString());
-    final Map<String, String> requestHeaders =
-            readHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader);
+    final Map<String, String> requestHeaders = readHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader);
     if (!requestHeaders.isEmpty()) {
       request.setHeaders(requestHeaders);
     }
@@ -149,8 +148,7 @@ public class TreblleServiceImpl implements TreblleService {
         error.setSource("onError");
         error.setType(chainException.getClass().getName());
         error.setMessage(chainException.getMessage());
-        error.setFile(
-                Arrays.stream(stackTrace).findFirst().map(StackTraceElement::getFileName).orElse(null));
+        error.setFile(Arrays.stream(stackTrace).findFirst().map(StackTraceElement::getFileName).orElse(null));
         error.setLine(
                 Arrays.stream(stackTrace)
                         .findFirst()
