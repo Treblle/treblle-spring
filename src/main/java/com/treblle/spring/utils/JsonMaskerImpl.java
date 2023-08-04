@@ -5,37 +5,32 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.treblle.spring.configuration.TreblleProperties;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class JsonMaskerImpl implements JsonMasker {
 
   private static final Logger log = LoggerFactory.getLogger(JsonMaskerImpl.class);
 
   private static final List<String> DEFAULT_KEYWORDS =
-      Arrays.asList(
-          "password",
-          "pwd",
-          "secret",
-          "password_confirmation",
-          "cc",
-          "card_number",
-          "ccv",
-          "ssn",
-          "credit_score");
+          Arrays.asList(
+                  "password",
+                  "pwd",
+                  "secret",
+                  "password_confirmation",
+                  "cc",
+                  "card_number",
+                  "ccv",
+                  "ssn",
+                  "credit_score");
 
   @Autowired private TreblleProperties properties;
 
@@ -53,8 +48,7 @@ public class JsonMaskerImpl implements JsonMasker {
       pattern = Pattern.compile(regex);
     } catch (PatternSyntaxException exception) {
       log.error("Error while compiling regex with custom keywords. Continuing with default.");
-      String defaultRegex =
-          DEFAULT_KEYWORDS.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
+      String defaultRegex = DEFAULT_KEYWORDS.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
       pattern = Pattern.compile(defaultRegex);
     }
   }
@@ -71,9 +65,8 @@ public class JsonMaskerImpl implements JsonMasker {
     if (target.isObject()) {
       Iterator<Entry<String, JsonNode>> fields = target.fields();
       while (fields.hasNext()) {
-        Map.Entry<String, JsonNode> field = fields.next();
-        ((ObjectNode) target)
-            .replace(field.getKey(), maskInternal(field.getKey(), field.getValue()));
+        Entry<String, JsonNode> field = fields.next();
+        ((ObjectNode) target).replace(field.getKey(), maskInternal(field.getKey(), field.getValue()));
       }
     }
     if (target.isArray()) {

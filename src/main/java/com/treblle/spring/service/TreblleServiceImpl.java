@@ -3,35 +3,12 @@ package com.treblle.spring.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treblle.spring.configuration.TreblleProperties;
-import com.treblle.spring.dto.Data;
-import com.treblle.spring.dto.Language;
-import com.treblle.spring.dto.OperatingSystem;
-import com.treblle.spring.dto.Request;
-import com.treblle.spring.dto.Response;
-import com.treblle.spring.dto.RuntimeError;
-import com.treblle.spring.dto.Server;
-import com.treblle.spring.dto.TrebllePayload;
+import com.treblle.spring.dto.*;
 import com.treblle.spring.utils.HttpUtils;
 import com.treblle.spring.utils.JsonMasker;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimeZone;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,19 +23,28 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+
 public class TreblleServiceImpl implements TreblleService {
 
   private static final Logger log = LoggerFactory.getLogger(TreblleServiceImpl.class);
 
-  private static final DateTimeFormatter DATE_TIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   private static final String TREBLLE_API_ENDPOINT = "https://rocknrolla.treblle.com";
   private static final String TREBLLE_API_KEY_HEADER = "x-api-key";
 
   @Autowired private Environment environment;
 
-  @Autowired private TreblleProperties properties;
+  @Autowired private TreblleProperties treblleProperties;
 
   @Autowired private ObjectMapper objectMapper;
 
@@ -66,31 +52,29 @@ public class TreblleServiceImpl implements TreblleService {
 
   @Autowired private RestTemplateBuilder restTemplateBuilder;
 
-  private RestTemplate client;
+  private RestTemplate restTemplate;
 
   @PostConstruct
   private void init() {
-    if (!StringUtils.hasLength(properties.getApiKey())) {
+    if (!StringUtils.hasLength(treblleProperties.getApiKey())) {
       throw new IllegalStateException("Treblle API key is required.");
     }
 
-    if (!StringUtils.hasLength(properties.getProjectId())) {
+    if (!StringUtils.hasLength(treblleProperties.getProjectId())) {
       throw new IllegalStateException("Treblle Project ID is required.");
     }
 
-    this.client =
-        restTemplateBuilder
-            .setConnectTimeout(Duration.ofSeconds(1))
-            .setReadTimeout(Duration.ofSeconds(1))
-            .build();
+    this.restTemplate =
+            restTemplateBuilder
+                    .setConnectTimeout(Duration.ofSeconds(1))
+                    .setReadTimeout(Duration.ofSeconds(1))
+                    .build();
   }
 
   @Override
-  public TrebllePayload createPayload(
-      HttpServletRequest httpRequest,
-      HttpServletResponse httpResponse,
-      Exception chainException,
-      long responseTimeInMillis) {
+  public TrebllePayload createPayload(HttpServletRequest httpRequest, HttpServletResponse httpResponse,
+                                                                    Exception chainException, long responseTimeInMillis) {
+
     final Language language = new Language();
     language.setName("java");
     language.setVersion(System.getProperty("java.version"));
@@ -112,8 +96,7 @@ public class TreblleServiceImpl implements TreblleService {
     request.setUserAgent(httpRequest.getHeader(HttpHeaders.USER_AGENT));
     request.setMethod(httpRequest.getMethod());
     request.setUrl(ServletUriComponentsBuilder.fromRequestUri(httpRequest).toUriString());
-    final Map<String, String> requestHeaders =
-        readHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader);
+    final Map<String, String> requestHeaders = readHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader);
     if (!requestHeaders.isEmpty()) {
       request.setHeaders(requestHeaders);
     }
@@ -122,9 +105,9 @@ public class TreblleServiceImpl implements TreblleService {
     response.setCode(chainException != null ? 500 : httpResponse.getStatus());
     response.setLoadTime((double) (responseTimeInMillis / 1000f));
     final Map<String, String> responseHeaders =
-        readHeaders(
-            Optional.ofNullable(httpResponse.getHeaderNames()).orElseGet(Collections::emptyList),
-            httpResponse::getHeader);
+            readHeaders(
+                    Optional.ofNullable(httpResponse.getHeaderNames()).orElseGet(Collections::emptyList),
+                    httpResponse::getHeader);
     if (!responseHeaders.isEmpty()) {
       response.setHeaders(responseHeaders);
     }
@@ -136,8 +119,8 @@ public class TreblleServiceImpl implements TreblleService {
     data.setResponse(response);
 
     final TrebllePayload payload = new TrebllePayload();
-    payload.setApiKey(properties.getApiKey());
-    payload.setProjectId(properties.getProjectId());
+    payload.setApiKey(treblleProperties.getApiKey());
+    payload.setProjectId(treblleProperties.getProjectId());
     payload.setData(data);
 
     return payload;
@@ -145,17 +128,15 @@ public class TreblleServiceImpl implements TreblleService {
 
   @Async
   @Override
-  public void maskAndSendPayload(
-      TrebllePayload payload, byte[] requestBody, byte[] responseBody, Exception chainException) {
+  public void maskAndSendPayload(TrebllePayload payload, byte[] requestBody, byte[] responseBody, Exception chainException) {
 
     try {
       final List<RuntimeError> errors = new ArrayList<>(2);
-
       Request request = payload.getData().getRequest();
       request.setBody(
-          Optional.ofNullable(readBody(requestBody, errors::add))
-              .map(jsonMasker::mask)
-              .orElse(null));
+              Optional.ofNullable(readBody(requestBody, errors::add))
+                      .map(jsonMasker::mask)
+                      .orElse(null));
 
       Response response = payload.getData().getResponse();
       response.setSize((long) responseBody.length);
@@ -167,13 +148,12 @@ public class TreblleServiceImpl implements TreblleService {
         error.setSource("onError");
         error.setType(chainException.getClass().getName());
         error.setMessage(chainException.getMessage());
-        error.setFile(
-            Arrays.stream(stackTrace).findFirst().map(StackTraceElement::getFileName).orElse(null));
+        error.setFile(Arrays.stream(stackTrace).findFirst().map(StackTraceElement::getFileName).orElse(null));
         error.setLine(
-            Arrays.stream(stackTrace)
-                .findFirst()
-                .map(StackTraceElement::getLineNumber)
-                .orElse(null));
+                Arrays.stream(stackTrace)
+                        .findFirst()
+                        .map(StackTraceElement::getLineNumber)
+                        .orElse(null));
 
         errors.add(error);
       }
@@ -184,12 +164,11 @@ public class TreblleServiceImpl implements TreblleService {
 
       final HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_JSON);
-      headers.set(TREBLLE_API_KEY_HEADER, properties.getApiKey());
-
+      headers.set(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
       final HttpEntity<TrebllePayload> requestEntity = new HttpEntity<>(payload, headers);
 
       try {
-        client.postForEntity(TREBLLE_API_ENDPOINT, requestEntity, Void.class);
+        restTemplate.postForEntity(TREBLLE_API_ENDPOINT, requestEntity, Void.class);
       } catch (RestClientException exception) {
         log.error("An error occurred while sending network request to Treblle.", exception);
       }
