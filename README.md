@@ -69,15 +69,32 @@ This means data masking is super fast and happens on a programming level before 
 
 ### Install the SDK
 
-Add the following dependency:
+Add the subsequent dependency to your `pom.xml` file while ensuring it aligns with your Spring Boot version:
+
+For Spring Boot `2.4.X` with `Java 8` and higher:
 
 ```xml
 <dependencies>
+  <!-- Other dependencies -->
     <dependency>
         <groupId>com.treblle</groupId>
         <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
+  <!-- Other dependencies -->
+</dependencies>
+```
+
+For Spring Boot `3.X` with `Java 8` and higher:
+```xml
+<dependencies>
+  <!-- Other dependencies -->
+    <dependency>
+        <groupId>com.treblle</groupId>
+        <artifactId>treblle-spring-boot-starter</artifactId>
+        <version>2.0.0</version>
+    </dependency>
+  <!-- Other dependencies -->
 </dependencies>
 ```
 
@@ -89,15 +106,26 @@ Annotate the desired configuration with `@EnableTreblle`
 @EnableTreblle
 @SpringBootApplication
 public class MyApplication {
-    ...
+  
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+  }
 }
 ```
 
-Configure the following properties:
+Configure the following properties in your `application.properties` file:
 
-```csv
+```properties
 treblle.apiKey=<API_KEY>
 treblle.projectId=<PROJECT_ID>
+```
+
+In case you are using the `application.yml` file:
+
+```yaml
+treblle:
+  api-key: <API_KEY>
+  project-id: <PROJECT_ID>
 ```
 
 That's it. Your API requests and responses are now being sent to your Treblle project.
