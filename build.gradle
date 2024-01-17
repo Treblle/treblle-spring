@@ -1,0 +1,44 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    api libs.org.springframework.boot.spring.boot.starter
+    api libs.org.springframework.boot.spring.boot.autoconfigure.processor
+    api libs.org.springframework.boot.spring.boot.configuration.processor
+    compileOnly libs.org.springframework.boot.spring.boot.starter.web
+}
+
+group = 'com.treblle'
+version = '2.1.0'
+description = 'treblle-spring-boot-starter'
+java.sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
