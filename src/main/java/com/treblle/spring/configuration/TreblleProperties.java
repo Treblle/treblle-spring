@@ -7,10 +7,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "treblle")
 public class TreblleProperties {
 
+  private String endpoint;
   private String apiKey;
   private String projectId;
   private List<String> urlPatterns = Collections.emptyList();
   private List<String> maskingKeywords = Collections.emptyList();
+
+  public String getEndpoint() {
+    return endpoint;
+  }
+
+  public void setEndpoint(String endpoint) {
+    this.endpoint = endpoint;
+  }
 
   public String getApiKey() {
     return apiKey;

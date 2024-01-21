@@ -168,7 +168,7 @@ public class TreblleServiceImpl implements TreblleService {
       final HttpEntity<TrebllePayload> requestEntity = new HttpEntity<>(payload, headers);
 
       try {
-        restTemplate.postForEntity(TREBLLE_API_ENDPOINT, requestEntity, Void.class);
+        restTemplate.postForEntity(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(TREBLLE_API_ENDPOINT), requestEntity, Void.class);
       } catch (RestClientException exception) {
         log.error("An error occurred while sending network request to Treblle.", exception);
       }
