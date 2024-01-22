@@ -116,6 +116,7 @@ public class MyApplication {
 Configure the following properties in your `application.properties` file:
 
 ```properties
+treblle.endpoint=<OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle.com
 treblle.apiKey=<API_KEY>
 treblle.projectId=<PROJECT_ID>
 ```
@@ -124,6 +125,7 @@ In case you are using the `application.yml` file:
 
 ```yaml
 treblle:
+  endpoint: <OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle.com
   api-key: <API_KEY>
   project-id: <PROJECT_ID>
 ```
