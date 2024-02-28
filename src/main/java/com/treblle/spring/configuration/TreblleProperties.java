@@ -3,6 +3,7 @@ package com.treblle.spring.configuration;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.Ordered;
 
 @ConfigurationProperties(prefix = "treblle")
 public class TreblleProperties {
@@ -10,6 +11,7 @@ public class TreblleProperties {
   private String endpoint;
   private String apiKey;
   private String projectId;
+  private Integer filterOrder = Ordered.LOWEST_PRECEDENCE - 10; // Similar to HttpTraceFilter
   private List<String> urlPatterns = Collections.emptyList();
   private List<String> maskingKeywords = Collections.emptyList();
 
@@ -35,6 +37,14 @@ public class TreblleProperties {
 
   public void setProjectId(String projectId) {
     this.projectId = projectId;
+  }
+
+  public Integer getFilterOrder() {
+    return filterOrder;
+  }
+
+  public void setFilterOrder(Integer filterOrder) {
+    this.filterOrder = filterOrder;
   }
 
   public List<String> getUrlPatterns() {
