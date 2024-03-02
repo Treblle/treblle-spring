@@ -6,7 +6,7 @@
 
 	<groupId>com.treblle</groupId>
 	<artifactId>treblle-spring-boot-starter</artifactId>
-	<version>2.0.2</version>
+	<version>2.0.3</version>
 	<name>treblle-spring-boot-starter</name>
 	<description>Official Treblle Starter for Spring Boot</description>
 	<url>https://github.com/Treblle/treblle-spring</url>
@@ -156,6 +156,19 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 			<version>${spring-boot.version}</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${spring-boot.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 </project>

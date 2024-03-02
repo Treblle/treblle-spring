@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.treblle.spring.configuration.TreblleProperties;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -16,9 +14,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-public class JsonMaskerImpl implements JsonMasker {
+public class DataMaskerImpl implements DataMasker {
 
-  private static final Logger log = LoggerFactory.getLogger(JsonMaskerImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(DataMaskerImpl.class);
+
+  private static final String MASKED_VALUE = "******";
 
   private static final List<String> DEFAULT_KEYWORDS =
           Arrays.asList(
@@ -32,12 +32,9 @@ public class JsonMaskerImpl implements JsonMasker {
                   "ssn",
                   "credit_score");
 
-  @Autowired private TreblleProperties properties;
-
   private Pattern pattern;
 
-  @PostConstruct
-  private void init() {
+  public DataMaskerImpl(TreblleProperties properties) {
     Set<String> keywords = new HashSet<>(9);
     keywords.addAll(DEFAULT_KEYWORDS);
     keywords.addAll(properties.getMaskingKeywords());
@@ -45,11 +42,11 @@ public class JsonMaskerImpl implements JsonMasker {
     String regex = keywords.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
 
     try {
-      pattern = Pattern.compile(regex);
+      pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException exception) {
       log.error("Error while compiling regex with custom keywords. Continuing with default.");
       String defaultRegex = DEFAULT_KEYWORDS.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
-      pattern = Pattern.compile(defaultRegex);
+      pattern = Pattern.compile(defaultRegex, Pattern.CASE_INSENSITIVE);
     }
   }
 
@@ -58,9 +55,23 @@ public class JsonMaskerImpl implements JsonMasker {
     return maskInternal(null, node);
   }
 
+  @Override
+  public Map<String, String> mask(Map<String, String> headers) {
+    return headers.entrySet().stream().collect(Collectors.toMap(
+            Map.Entry::getKey,
+            entry -> {
+              if (pattern.matcher(entry.getKey()).matches() && Objects.nonNull(entry.getValue())) {
+                return MASKED_VALUE;
+              } else {
+                return entry.getValue();
+              }
+            }
+    ));
+  }
+
   private JsonNode maskInternal(String key, JsonNode target) {
     if (target.isTextual() && key != null && pattern.matcher(key).matches()) {
-      return new TextNode(String.join("", Collections.nCopies(target.asText().length(), "*")));
+      return new TextNode(MASKED_VALUE);
     }
     if (target.isObject()) {
       Iterator<Entry<String, JsonNode>> fields = target.fields();
@@ -76,4 +87,5 @@ public class JsonMaskerImpl implements JsonMasker {
     }
     return target;
   }
+
 }

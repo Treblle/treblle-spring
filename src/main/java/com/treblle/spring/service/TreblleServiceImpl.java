@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treblle.spring.configuration.TreblleProperties;
 import com.treblle.spring.dto.*;
+import com.treblle.spring.utils.DataMasker;
 import com.treblle.spring.utils.HttpUtils;
-import com.treblle.spring.utils.JsonMasker;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -42,20 +40,22 @@ public class TreblleServiceImpl implements TreblleService {
   private static final String TREBLLE_API_ENDPOINT = "https://rocknrolla.treblle.com";
   private static final String TREBLLE_API_KEY_HEADER = "x-api-key";
 
-  @Autowired private Environment environment;
+  private final Environment environment;
 
-  @Autowired private TreblleProperties treblleProperties;
+  private final TreblleProperties treblleProperties;
 
-  @Autowired private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-  @Autowired private JsonMasker jsonMasker;
+  private final DataMasker dataMasker;
 
-  @Autowired private RestTemplateBuilder restTemplateBuilder;
+  private final RestTemplate restTemplate;
 
-  private RestTemplate restTemplate;
+  public TreblleServiceImpl(Environment environment, TreblleProperties treblleProperties, ObjectMapper objectMapper, DataMasker dataMasker, RestTemplateBuilder restTemplateBuilder) {
+    this.environment = environment;
+    this.treblleProperties = treblleProperties;
+    this.objectMapper = objectMapper;
+    this.dataMasker = dataMasker;
 
-  @PostConstruct
-  private void init() {
     if (!StringUtils.hasLength(treblleProperties.getApiKey())) {
       throw new IllegalStateException("Treblle API key is required.");
     }
@@ -135,7 +135,7 @@ public class TreblleServiceImpl implements TreblleService {
       Request request = payload.getData().getRequest();
       request.setBody(
               Optional.ofNullable(readBody(requestBody, errors::add))
-                      .map(jsonMasker::mask)
+                      .map(dataMasker::mask)
                       .orElse(null));
 
       Response response = payload.getData().getResponse();
@@ -178,7 +178,7 @@ public class TreblleServiceImpl implements TreblleService {
   }
 
   private Map<String, String> readHeaders(Collection<String> headers, UnaryOperator<String> extractor) {
-    return headers.stream().collect(Collectors.toMap(name -> name, extractor, (first, second) -> first));
+    return dataMasker.mask(headers.stream().collect(Collectors.toMap(name -> name, extractor, (first, second) -> first)));
   }
 
   private JsonNode readBody(byte[] body, Consumer<RuntimeError> errorConsumer) {
