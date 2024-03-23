@@ -49,9 +49,14 @@ public class TreblleAutoConfiguration {
   }
 
   @Bean
-  public FilterRegistrationBean<TreblleFilter> filterRegistration(TreblleProperties properties, TreblleService treblleService) {
+  public TreblleConfiguration treblleConfiguration() {
+    return new DefaultTreblleConfigurationImpl();
+  }
+
+  @Bean
+  public FilterRegistrationBean<TreblleFilter> filterRegistration(TreblleProperties properties, TreblleConfiguration treblleConfiguration, TreblleService treblleService) {
     final FilterRegistrationBean<TreblleFilter> registrationBean = new FilterRegistrationBean<>();
-    registrationBean.setFilter(new TreblleFilter(treblleService));
+    registrationBean.setFilter(new TreblleFilter(treblleService, treblleConfiguration));
     registrationBean.setOrder(treblleProperties.getFilterOrder());
     if (!properties.getUrlPatterns().isEmpty()) {
       registrationBean.setUrlPatterns(properties.getUrlPatterns());

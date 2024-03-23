@@ -92,7 +92,7 @@ For Spring Boot `3.X` with `Java 8` and higher:
     <dependency>
         <groupId>com.treblle</groupId>
         <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.4</version>
     </dependency>
   <!-- Other dependencies -->
 </dependencies>
@@ -109,7 +109,8 @@ public class MyApplication {
   
     public static void main(String[] args) {
         SpringApplication.run(MyApplication.class, args);
-  }
+    }
+    
 }
 ```
 
@@ -133,6 +134,25 @@ treblle:
 ```
 
 That's it. Your API requests and responses are now being sent to your Treblle project.
+
+#### Need to disable Treblle processing based on certain request conditions? Just implement the following bean:
+
+```java
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+
+@Primary
+@Component
+public class MyTreblleConfiguration implements TreblleConfiguration {
+
+  @Override
+  public boolean shouldProcess(HttpServletRequest servletRequest) {
+    // You custom logic in deciding if the request should be processed. Default implementation returns true.
+    return true;
+  }
+
+}
+```
 
 > See the [docs]() for this SDK to learn more.
 

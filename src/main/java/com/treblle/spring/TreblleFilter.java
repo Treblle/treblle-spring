@@ -1,5 +1,6 @@
 package com.treblle.spring;
 
+import com.treblle.spring.configuration.TreblleConfiguration;
 import com.treblle.spring.dto.TrebllePayload;
 import com.treblle.spring.service.TreblleService;
 import jakarta.servlet.FilterChain;
@@ -21,8 +22,11 @@ public class TreblleFilter extends OncePerRequestFilter {
 
   private final TreblleService treblleService;
 
-  public TreblleFilter(TreblleService treblleService) {
+  private final TreblleConfiguration treblleConfiguration;
+
+  public TreblleFilter(TreblleService treblleService, TreblleConfiguration treblleConfiguration) {
     this.treblleService = treblleService;
+    this.treblleConfiguration = treblleConfiguration;
   }
 
   @Override
@@ -31,7 +35,7 @@ public class TreblleFilter extends OncePerRequestFilter {
       log.debug("Attempted to intercept request but content type was not valid. Treblle only works on JSON API's.");
       return true;
     }
-    return super.shouldNotFilter(request);
+    return !treblleConfiguration.shouldProcess(request);
   }
 
   private boolean isJSONRequest(HttpServletRequest request) {
