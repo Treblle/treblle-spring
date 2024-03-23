@@ -85,7 +85,7 @@ For Spring Boot `2.4.X` with `Java 8` and higher:
 </dependencies>
 ```
 
-For Spring Boot `3.X` with `Java 8` and higher:
+For Spring Boot `3.X` with `Java 17` and higher:
 ```xml
 <dependencies>
   <!-- Other dependencies -->
