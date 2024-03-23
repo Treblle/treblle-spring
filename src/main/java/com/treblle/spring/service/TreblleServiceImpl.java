@@ -136,11 +136,16 @@ public class TreblleServiceImpl implements TreblleService {
       request.setBody(
               Optional.ofNullable(readBody(requestBody, errors::add))
                       .map(dataMasker::mask)
-                      .orElse(null));
+                      .orElse(null)
+      );
 
       Response response = payload.getData().getResponse();
       response.setSize((long) responseBody.length);
-      response.setBody(readBody(responseBody, errors::add));
+      response.setBody(
+              Optional.ofNullable(readBody(responseBody, errors::add))
+                      .map(dataMasker::mask)
+                      .orElse(null)
+      );
 
       if (chainException != null) {
         StackTraceElement[] stackTrace = chainException.fillInStackTrace().getStackTrace();
