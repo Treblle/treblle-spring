@@ -14,14 +14,19 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.*;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -33,7 +38,7 @@ import java.util.stream.Collectors;
 
 public class TreblleServiceImpl implements TreblleService {
 
-  private static final Logger log = LoggerFactory.getLogger(TreblleServiceImpl.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TreblleServiceImpl.class);
 
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -69,6 +74,12 @@ public class TreblleServiceImpl implements TreblleService {
 
     if (!StringUtils.hasLength(treblleProperties.getProjectId())) {
       throw new IllegalStateException("Treblle Project ID is required.");
+    }
+
+    if (treblleProperties.isDebug()) {
+      restTemplateBuilder = restTemplateBuilder
+              .requestFactory(() -> new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()))
+              .additionalInterceptors(new TreblleLoggingInterceptor());
     }
 
     this.restTemplate =
@@ -182,10 +193,12 @@ public class TreblleServiceImpl implements TreblleService {
       try {
         restTemplate.postForEntity(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(getRandomAPIEndpoint()), requestEntity, Void.class);
       } catch (RestClientException exception) {
-        log.error("An error occurred while sending network request to Treblle.", exception);
+        if (treblleProperties.isDebug()) {
+          LOGGER.error("An error occurred while sending network request to Treblle.", exception);
+        }
       }
     } catch (Exception exception) {
-      log.error("An error occurred while sending data to Treblle.", exception);
+      LOGGER.error("An error occurred while preparing data for Treblle.", exception);
     }
   }
 
@@ -214,4 +227,32 @@ public class TreblleServiceImpl implements TreblleService {
       return null;
     }
   }
+
+  public static class TreblleLoggingInterceptor implements ClientHttpRequestInterceptor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TreblleLoggingInterceptor.class);
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+      LOGGER.debug("Request Method: " + request.getMethod());
+      LOGGER.debug("Request URI: " + request.getURI());
+      LOGGER.debug("Request Headers: " + request.getHeaders());
+      if (body.length > 0) {
+        LOGGER.debug("Request Body: " + new String(body, StandardCharsets.UTF_8));
+      }
+
+      ClientHttpResponse response = execution.execute(request, body);
+
+      LOGGER.debug("Response Status Code: " + response.getStatusCode());
+      LOGGER.debug("Response Headers: " + response.getHeaders());
+      if (response.getBody() != null) {
+        String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
+        LOGGER.debug("Response Body: " + responseBody);
+      }
+
+      return response;
+    }
+
+  }
+
 }

@@ -12,6 +12,7 @@ public class TreblleProperties {
   private String apiKey;
   private String projectId;
   private Integer filterOrder = Ordered.LOWEST_PRECEDENCE - 10; // Similar to HttpTraceFilter
+  private boolean debug = false;
   private List<String> urlPatterns = Collections.emptyList();
   private List<String> maskingKeywords = Collections.emptyList();
 
@@ -45,6 +46,14 @@ public class TreblleProperties {
 
   public void setFilterOrder(Integer filterOrder) {
     this.filterOrder = filterOrder;
+  }
+
+  public boolean isDebug() {
+    return debug;
+  }
+
+  public void setDebug(boolean debug) {
+    this.debug = debug;
   }
 
   public List<String> getUrlPatterns() {
