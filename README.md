@@ -121,6 +121,7 @@ treblle.endpoint=<OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle
 treblle.apiKey=<API_KEY>
 treblle.projectId=<PROJECT_ID>
 treblle.filter-order=<ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
+treblle.debug=false # Default is false
 ```
 
 In case you are using the `application.yml` file:
@@ -130,7 +131,8 @@ treblle:
   endpoint: <OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle.com
   api-key: <API_KEY>
   project-id: <PROJECT_ID>
-  treblle.filter-order: <ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
+  filter-order: <ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
+  debug: false # Default is false
 ```
 
 That's it. Your API requests and responses are now being sent to your Treblle project.
