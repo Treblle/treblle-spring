@@ -37,7 +37,14 @@ public class TreblleServiceImpl implements TreblleService {
 
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-  private static final String TREBLLE_API_ENDPOINT = "https://rocknrolla.treblle.com";
+  private static final String[] TREBLLE_API_ENDPOINT = {
+          "https://rocknrolla.treblle.com",
+          "https://punisher.treblle.com",
+          "https://sicario.treblle.com"
+  };
+
+  private static final Random RANDOM = new SecureRandom();
+
   private static final String TREBLLE_API_KEY_HEADER = "x-api-key";
 
   private final Environment environment;
@@ -173,13 +180,18 @@ public class TreblleServiceImpl implements TreblleService {
       final HttpEntity<TrebllePayload> requestEntity = new HttpEntity<>(payload, headers);
 
       try {
-        restTemplate.postForEntity(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(TREBLLE_API_ENDPOINT), requestEntity, Void.class);
+        restTemplate.postForEntity(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(getRandomAPIEndpoint()), requestEntity, Void.class);
       } catch (RestClientException exception) {
         log.error("An error occurred while sending network request to Treblle.", exception);
       }
     } catch (Exception exception) {
       log.error("An error occurred while sending data to Treblle.", exception);
     }
+  }
+
+  private String getRandomAPIEndpoint() {
+    int randomIndex = RANDOM.nextInt(TREBLLE_API_ENDPOINT.length);
+    return TREBLLE_API_ENDPOINT[randomIndex];
   }
 
   private Map<String, String> readHeaders(Collection<String> headers, UnaryOperator<String> extractor) {
