@@ -122,6 +122,7 @@ treblle.apiKey=<API_KEY>
 treblle.projectId=<PROJECT_ID>
 treblle.filter-order=<ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
 treblle.debug=false # Default is false
+treblle.masking-keywords=<ADDITIONAL_KEYWORDS_TO_MASK> # Additional masking keywords separated by comma, to mask whole objects use <keyword>.*
 ```
 
 In case you are using the `application.yml` file:
@@ -133,6 +134,7 @@ treblle:
   project-id: <PROJECT_ID>
   filter-order: <ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
   debug: false # Default is false
+  masking-keywords: <ADDITIONAL_KEYWORDS_TO_MASK> # Additional masking keywords separated by comma, to mask whole objects use <keyword>.*
 ```
 
 That's it. Your API requests and responses are now being sent to your Treblle project.

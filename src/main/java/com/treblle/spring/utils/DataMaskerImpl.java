@@ -26,28 +26,63 @@ public class DataMaskerImpl implements DataMasker {
                   "pwd",
                   "secret",
                   "password_confirmation",
+                  "passwordConfirmation",
                   "cc",
                   "card_number",
+                  "cardNumber",
                   "ccv",
                   "ssn",
-                  "credit_score");
+                  "credit_score",
+                  "creditScore",
+                  "api_key"
+          );
 
   private Pattern pattern;
+  private Pattern catchAllPattern;
 
   public DataMaskerImpl(TreblleProperties properties) {
     Set<String> keywords = new HashSet<>(9);
     keywords.addAll(DEFAULT_KEYWORDS);
     keywords.addAll(properties.getMaskingKeywords());
 
-    String regex = keywords.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
+    String mergedPattern = keywords.stream()
+            .filter(it -> !it.endsWith(".*"))
+            .collect(Collectors.joining("|"));
 
     try {
-      pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+      pattern = Pattern.compile("^(" + mergedPattern + ")$", Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException exception) {
-      log.error("Error while compiling regex with custom keywords. Continuing with default.");
+      log.error("Error while compiling regex with custom keywords. Continuing with default pattern.", exception);
       String defaultRegex = DEFAULT_KEYWORDS.stream().map(it -> "\\b" + it + "\\b").collect(Collectors.joining("|"));
       pattern = Pattern.compile(defaultRegex, Pattern.CASE_INSENSITIVE);
     }
+
+    String mergedCatchAllPattern = keywords.stream()
+            .filter(it -> it.endsWith(".*"))
+            .map(this::removeCatchAllSuffix)
+            .collect(Collectors.joining("|"));
+
+    try {
+      catchAllPattern = Pattern.compile("^(" + mergedCatchAllPattern + ")$", Pattern.CASE_INSENSITIVE);
+    } catch (PatternSyntaxException exception) {
+      log.error("Error while compiling catch all regex with custom keywords. Continuing with empty pattern.", exception);
+      catchAllPattern = null;
+    }
+  }
+
+  private String removeCatchAllSuffix(String input) {
+    return input.substring(0, input.length() - ".*".length());
+  }
+
+  private boolean matchesMaskingKeywords(String key) {
+    return pattern.matcher(key).matches();
+  }
+
+  private boolean matchesCatchAllMaskingKeywords(String key) {
+    if (catchAllPattern == null) {
+      return false;
+    }
+    return catchAllPattern.matcher(key).matches();
   }
 
   @Override
@@ -60,7 +95,7 @@ public class DataMaskerImpl implements DataMasker {
     return headers.entrySet().stream().collect(Collectors.toMap(
             Map.Entry::getKey,
             entry -> {
-              if (pattern.matcher(entry.getKey()).matches() && Objects.nonNull(entry.getValue())) {
+              if (matchesMaskingKeywords(entry.getKey()) && Objects.nonNull(entry.getValue())) {
                 return MASKED_VALUE;
               } else {
                 return entry.getValue();
@@ -70,8 +105,10 @@ public class DataMaskerImpl implements DataMasker {
   }
 
   private JsonNode maskInternal(String key, JsonNode target) {
-    if (target.isTextual() && key != null && pattern.matcher(key).matches()) {
+    if (target.isValueNode() && key != null && matchesMaskingKeywords(key)) {
       return new TextNode(MASKED_VALUE);
+    } else if (key != null && matchesCatchAllMaskingKeywords(key)) {
+      return maskAllInternal(target);
     }
     if (target.isObject()) {
       Iterator<Entry<String, JsonNode>> fields = target.fields();
@@ -83,6 +120,23 @@ public class DataMaskerImpl implements DataMasker {
     if (target.isArray()) {
       for (int index = 0; index < target.size(); index++) {
         ((ArrayNode) target).set(index, maskInternal(key, target.get(index)));
+      }
+    }
+    return target;
+  }
+
+  private JsonNode maskAllInternal(JsonNode target) {
+    if (target.isValueNode()) {
+      return new TextNode(MASKED_VALUE);
+    } else if (target.isArray()) {
+      for (int index = 0; index < target.size(); index++) {
+        ((ArrayNode) target).set(index, maskAllInternal(target.get(index)));
+      }
+    } else if (target.isObject()) {
+      Iterator<Entry<String, JsonNode>> fields = target.fields();
+      while (fields.hasNext()) {
+        Entry<String, JsonNode> field = fields.next();
+        ((ObjectNode) target).replace(field.getKey(), maskAllInternal(field.getValue()));
       }
     }
     return target;
