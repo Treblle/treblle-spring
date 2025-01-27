@@ -7,8 +7,11 @@ import com.treblle.common.service.AbstractTreblleService;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +36,14 @@ public class TreblleServiceImpl extends AbstractTreblleService {
             httpPost.setHeader("Content-Type", APPLICATION_JSON_VALUE);
             httpPost.setHeader(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
 
-            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpClientBuilder httpClientBuilder = HttpClients.custom().disableAutomaticRetries();
+            if (treblleProperties.isDebug()) {
+                httpClientBuilder
+                        .addRequestInterceptorFirst(new RequestLogger())
+                        .addResponseInterceptorFirst(new ResponseLogger());
+            }
+
+            try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
                 StringEntity entity = new StringEntity(objectMapper.writeValueAsString(payload));
                 httpPost.setEntity(entity);
 
@@ -48,6 +58,26 @@ public class TreblleServiceImpl extends AbstractTreblleService {
                 }
             }
         });
+    }
+
+    public static class RequestLogger implements HttpRequestInterceptor {
+
+        @Override
+        public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext) throws HttpException, IOException {
+            LOGGER.info("Request Method: {}", httpRequest.getMethod());
+            LOGGER.info("Request URI: {}", httpRequest.getRequestUri());
+        }
+
+    }
+
+    public static class ResponseLogger implements HttpResponseInterceptor {
+
+        @Override
+        public void process(HttpResponse httpResponse, EntityDetails entityDetails, HttpContext httpContext) throws HttpException, IOException {
+            LOGGER.info("Response Status Code: {}", httpResponse.getCode());
+            LOGGER.info("Response Status Reason: {}", httpResponse.getReasonPhrase());
+        }
+
     }
 
 }
