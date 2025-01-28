@@ -65,7 +65,7 @@ public class TreblleServiceImpl extends AbstractTreblleService {
         @Override
         public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext) throws HttpException, IOException {
             LOGGER.info("Request Method: {}", httpRequest.getMethod());
-            LOGGER.info("Request URI: {}", httpRequest.getRequestUri());
+            LOGGER.info("Request Authority: {}", httpRequest.getAuthority().toString());
         }
 
     }

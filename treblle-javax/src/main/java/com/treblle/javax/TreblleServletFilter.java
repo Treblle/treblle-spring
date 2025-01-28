@@ -32,11 +32,6 @@ public class TreblleServletFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        if (shouldNotFilter((HttpServletRequest) servletRequest)) {
-            filterChain.doFilter(servletRequest, servletResponse);
-            return;
-        }
-
         final ContentCachingRequestWrapper cachingRequest = new ContentCachingRequestWrapper((HttpServletRequest) servletRequest);
         final ContentCachingResponseWrapper cachingResponse = new ContentCachingResponseWrapper((HttpServletResponse) servletResponse);
 
@@ -60,19 +55,6 @@ public class TreblleServletFilter implements Filter {
                 log.error("An error occurred while sending data to Treblle.", exception);
             }
         }
-    }
-
-    private boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        if (!isJSONRequest(request)) {
-            log.debug("Attempted to intercept request but content type was not valid. Treblle only works on JSON API's.");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isJSONRequest(HttpServletRequest request) {
-        String contentType = request.getContentType();
-        return contentType != null && contentType.startsWith(APPLICATION_JSON_VALUE);
     }
 
     @Override
