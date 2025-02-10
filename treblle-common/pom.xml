@@ -5,11 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.treblle</groupId>
-    <artifactId>treblle-javax</artifactId>
+    <artifactId>treblle-common</artifactId>
     <version>1.0.1</version>
-    <name>treblle-javax</name>
-    <description>Official Treblle SDK for Javax Servlet API 3.1.0 and Javax RS API 2.1.1</description>
+    <name>treblle-common</name>
+    <description>Official Treblle common Java library</description>
     <url>https://github.com/Treblle/treblle-java</url>
+
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -23,8 +24,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -79,6 +80,10 @@
             <name>Ivo Majic</name>
             <organizationUrl>https://github.com/IvoMajic</organizationUrl>
         </developer>
+        <developer>
+            <name>Todimu Isewon</name>
+            <organizationUrl>https://github.com/Oluwatodimu</organizationUrl>
+        </developer>
     </developers>
 
     <organization>
@@ -129,25 +134,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.1.1</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.15.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.1</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.15.2</version>
         </dependency>
         <dependency>
-            <groupId>com.treblle</groupId>
-            <artifactId>treblle-common</artifactId>
-            <version>1.0.1</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
         </dependency>
     </dependencies>
 

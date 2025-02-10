@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>common</module>
+        <module>treblle-common</module>
         <module>treblle-spring-boot-starter</module>
         <module>treblle-javax</module>
         <module>treblle-jakarta</module>

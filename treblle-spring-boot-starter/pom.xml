@@ -4,17 +4,12 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.treblle</groupId>
-		<artifactId>treblle-java</artifactId>
-		<version>1.0</version>
-	</parent>
-
+	<groupId>com.treblle</groupId>
 	<artifactId>treblle-spring-boot-starter</artifactId>
 	<version>2.0.6</version>
 	<name>treblle-spring-boot-starter</name>
 	<description>Official Treblle Starter for Spring Boot</description>
-	<url>https://github.com/Treblle/treblle-spring</url>
+	<url>https://github.com/Treblle/treblle-java</url>
 
 	<properties>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -75,9 +70,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/Treblle/treblle-spring/tree/main</url>
-		<connection>scm:git:git://github.com/Treblle/treblle-spring.git</connection>
-		<developerConnection>scm:git:ssh://github.com:Treblle/treblle-spring.git</developerConnection>
+		<url>https://github.com/Treblle/treblle-java/tree/main</url>
+		<connection>scm:git:git://github.com/Treblle/treblle-java.git</connection>
+		<developerConnection>scm:git:ssh://github.com:Treblle/treblle-java.git</developerConnection>
 	</scm>
 
 	<developers>
@@ -178,8 +173,8 @@
 
 		<dependency>
 			<groupId>com.treblle</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0.0</version>
+			<artifactId>treblle-common</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 	</dependencies>
 </project>
