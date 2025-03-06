@@ -133,7 +133,7 @@ public abstract class AbstractTreblleService implements TreblleService {
     }
 
     private JsonNode readBody(byte[] body, Consumer<RuntimeError> errorConsumer) {
-        if (body.length > 0) {
+        if (body != null && body.length > 0) {
             try {
                 return objectMapper.readTree(body, 0, body.length);
             } catch (IOException exception) {

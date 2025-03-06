@@ -6,7 +6,7 @@
 
     <groupId>com.treblle</groupId>
     <artifactId>treblle-aws-lambda</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>treblle-aws-lambda</name>
     <description>Official Treblle SDK for AWS Lambda</description>
     <url>https://github.com/Treblle/treblle-java</url>
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>com.treblle</groupId>
             <artifactId>treblle-common</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
     </dependencies>
 
