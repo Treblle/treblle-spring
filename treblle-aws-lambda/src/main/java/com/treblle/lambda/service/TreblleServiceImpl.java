@@ -33,33 +33,31 @@ public class TreblleServiceImpl extends AbstractTreblleService {
 
     @Override
     protected void sendPayload(TrebllePayload payload) {
-        CompletableFuture.runAsync(() -> {
-            final HttpPost httpPost = new HttpPost(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(getRandomAPIEndpoint()));
-            httpPost.setHeader("Content-Type", APPLICATION_JSON_VALUE);
-            httpPost.setHeader(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
+        final HttpPost httpPost = new HttpPost(Optional.ofNullable(treblleProperties.getEndpoint()).orElse(getRandomAPIEndpoint()));
+        httpPost.setHeader("Content-Type", APPLICATION_JSON_VALUE);
+        httpPost.setHeader(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
 
-            HttpClientBuilder httpClientBuilder = HttpClients.custom().disableAutomaticRetries();
+        HttpClientBuilder httpClientBuilder = HttpClients.custom().disableAutomaticRetries();
+        if (treblleProperties.isDebug()) {
+            httpClientBuilder
+                    .addRequestInterceptorFirst(new RequestLogger())
+                    .addResponseInterceptorFirst(new ResponseLogger());
+        }
+
+        try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
+            StringEntity entity = new StringEntity(objectMapper.writeValueAsString(payload));
+            httpPost.setEntity(entity);
+
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+                if (response.getCode() != 200 && treblleProperties.isDebug()) {
+                    LOGGER.error("An error occurred while sending network request to Treblle. Status Code: {}", response.getCode());
+                }
+            }
+        } catch (IOException exception) {
             if (treblleProperties.isDebug()) {
-                httpClientBuilder
-                        .addRequestInterceptorFirst(new RequestLogger())
-                        .addResponseInterceptorFirst(new ResponseLogger());
+                LOGGER.error("An error occurred while sending network request to Treblle.", exception);
             }
-
-            try (CloseableHttpClient httpClient = httpClientBuilder.build()) {
-                StringEntity entity = new StringEntity(objectMapper.writeValueAsString(payload));
-                httpPost.setEntity(entity);
-
-                try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-                    if (response.getCode() != 200 && treblleProperties.isDebug()) {
-                        LOGGER.error("An error occurred while sending network request to Treblle. Status Code: {}", response.getCode());
-                    }
-                }
-            } catch (IOException exception) {
-                if (treblleProperties.isDebug()) {
-                    LOGGER.error("An error occurred while sending network request to Treblle.", exception);
-                }
-            }
-        });
+        }
     }
 
     public static class RequestLogger implements HttpRequestInterceptor {
