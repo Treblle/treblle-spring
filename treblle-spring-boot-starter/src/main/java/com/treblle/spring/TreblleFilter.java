@@ -31,16 +31,7 @@ public class TreblleFilter extends OncePerRequestFilter {
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-    if (!isJSONRequest(request)) {
-      log.debug("Attempted to intercept request but content type was not valid. Treblle only works on JSON API's.");
-      return true;
-    }
     return !treblleConfiguration.shouldProcess(request);
-  }
-
-  private boolean isJSONRequest(HttpServletRequest request) {
-    String contentType = request.getContentType();
-    return contentType != null && contentType.startsWith(MediaType.APPLICATION_JSON_VALUE);
   }
 
   @Override
