@@ -1,6 +1,5 @@
 package com.treblle.spring.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 
@@ -9,13 +8,11 @@ public class Request {
   private String timestamp;
   private String ip;
   private String url;
-
-  @JsonProperty("user_agent")
-  private String userAgent;
-
+  private String user_agent;
   private String method;
   private Map<String, String> headers;
   private JsonNode body;
+  private Map<String, String> query;
 
   public String getTimestamp() {
     return timestamp;
@@ -41,12 +38,12 @@ public class Request {
     this.url = url;
   }
 
-  public String getUserAgent() {
-    return userAgent;
+  public String getUser_agent() {
+    return user_agent;
   }
 
-  public void setUserAgent(String userAgent) {
-    this.userAgent = userAgent;
+  public void setUser_agent(String user_agent) {
+    this.user_agent = user_agent;
   }
 
   public String getMethod() {
@@ -72,4 +69,13 @@ public class Request {
   public void setBody(JsonNode body) {
     this.body = body;
   }
+
+  public Map<String, String> getQuery() {
+    return query;
+  }
+
+  public void setQuery(Map<String, String> query) {
+    this.query = query;
+  }
+
 }
