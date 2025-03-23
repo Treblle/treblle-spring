@@ -20,27 +20,18 @@ public class TreblleAutoConfiguration {
 
   private final SpringTreblleProperties treblleProperties;
 
-  private final ObjectMapper objectMapper;
-
   private final RestTemplateBuilder restTemplateBuilder;
 
   public TreblleAutoConfiguration(
           SpringTreblleProperties treblleProperties,
-          ObjectMapper objectMapper,
           RestTemplateBuilder restTemplateBuilder) {
     this.treblleProperties = treblleProperties;
-    this.objectMapper = objectMapper;
     this.restTemplateBuilder = restTemplateBuilder;
   }
 
   @Bean
-  public TreblleService treblleService(DataMasker dataMasker) {
-    return new TreblleServiceImpl(treblleProperties, objectMapper, restTemplateBuilder);
-  }
-
-  @Bean
-  public DataMasker jsonMasker() {
-    return new DataMaskerImpl(treblleProperties);
+  public TreblleService treblleService() {
+    return new TreblleServiceImpl(treblleProperties, new ObjectMapper(), restTemplateBuilder);
   }
 
   @Bean

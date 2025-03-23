@@ -77,20 +77,20 @@ public class TreblleServiceImpl extends AbstractTreblleService {
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-      LOGGER.debug("Request Method: " + request.getMethod());
-      LOGGER.debug("Request URI: " + request.getURI());
-      LOGGER.debug("Request Headers: " + request.getHeaders());
+      LOGGER.info("Request Method: " + request.getMethod());
+      LOGGER.info("Request URI: " + request.getURI());
+      LOGGER.info("Request Headers: " + request.getHeaders());
       if (body.length > 0) {
-        LOGGER.debug("Request Body: " + new String(body, StandardCharsets.UTF_8));
+        LOGGER.info("Request Body: " + new String(body, StandardCharsets.UTF_8));
       }
 
       ClientHttpResponse response = execution.execute(request, body);
 
-      LOGGER.debug("Response Status Code: " + response.getStatusCode());
-      LOGGER.debug("Response Headers: " + response.getHeaders());
+      LOGGER.info("Response Status Code: " + response.getStatusCode());
+      LOGGER.info("Response Headers: " + response.getHeaders());
       if (response.getBody() != null) {
         String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
-        LOGGER.debug("Response Body: " + responseBody);
+        LOGGER.info("Response Body: " + responseBody);
       }
 
       return response;

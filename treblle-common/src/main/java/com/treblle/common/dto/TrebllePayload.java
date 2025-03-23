@@ -1,41 +1,29 @@
 package com.treblle.common.dto;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class TrebllePayload {
 
-  private static final String TREBLLE_VERSION = "0.6";
+  private static final Float TREBLLE_VERSION = 1.0f;
 
-  @JsonProperty("api_key")
-  private String apiKey;
-
-  @JsonProperty("project_id")
-  private String projectId;
-
+  private String api_key;
+  private String project_id;
   private String sdk;
-
+  private Float version = TREBLLE_VERSION;
   private Data data;
 
-  public String getApiKey() {
-    return apiKey;
+  public String getApi_key() {
+    return api_key;
   }
 
-  public void setApiKey(String apiKey) {
-    this.apiKey = apiKey;
+  public void setApi_key(String api_key) {
+    this.api_key = api_key;
   }
 
-  public String getProjectId() {
-    return projectId;
+  public String getProject_id() {
+    return project_id;
   }
 
-  public void setProjectId(String projectId) {
-    this.projectId = projectId;
-  }
-
-  @JsonGetter("version")
-  public String getVersion() {
-    return TREBLLE_VERSION;
+  public void setProject_id(String project_id) {
+    this.project_id = project_id;
   }
 
   public String getSdk() {
@@ -46,6 +34,14 @@ public class TrebllePayload {
     this.sdk = sdk;
   }
 
+  public Float getVersion() {
+    return version;
+  }
+
+  public void setVersion(Float version) {
+    this.version = version;
+  }
+
   public Data getData() {
     return data;
   }
@@ -53,4 +49,5 @@ public class TrebllePayload {
   public void setData(Data data) {
     this.data = data;
   }
+
 }

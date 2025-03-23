@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContentCachingRequestWrapper extends HttpServletRequestWrapper implements RequestWrapper {
 
@@ -143,6 +144,11 @@ public class ContentCachingRequestWrapper extends HttpServletRequestWrapper impl
     @Override
     public String getServerAddr() {
         return null;
+    }
+
+    @Override
+    public Map<String, String> getQueryParams() {
+        return getRequest().getParameterMap().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> String.join(",", e.getValue())));
     }
 
     private class ContentCachingInputStream extends ServletInputStream {

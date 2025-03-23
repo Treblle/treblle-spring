@@ -5,7 +5,6 @@ public class Server {
   private String ip;
   private String timezone;
   private String software;
-  private String signature;
   private String protocol;
   private OperatingSystem os;
 
@@ -31,14 +30,6 @@ public class Server {
 
   public void setSoftware(String software) {
     this.software = software;
-  }
-
-  public String getSignature() {
-    return signature;
-  }
-
-  public void setSignature(String signature) {
-    this.signature = signature;
   }
 
   public String getProtocol() {

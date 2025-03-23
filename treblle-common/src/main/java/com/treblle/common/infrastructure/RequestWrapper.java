@@ -1,6 +1,8 @@
 package com.treblle.common.infrastructure;
 
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
 
 public interface RequestWrapper {
 
@@ -17,5 +19,9 @@ public interface RequestWrapper {
     String getRemoteAddr();
 
     String getServerAddr();
+
+    default Map<String, String> getQueryParams() {
+        return Collections.emptyMap();
+    }
 
 }

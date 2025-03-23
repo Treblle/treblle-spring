@@ -6,6 +6,8 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ContainerRequestContextWrapper implements RequestWrapper {
 
@@ -48,6 +50,13 @@ public class ContainerRequestContextWrapper implements RequestWrapper {
     @Override
     public String getServerAddr() {
         return null;
+    }
+
+    @Override
+    public Map<String, String> getQueryParams() {
+        return containerRequestContext.getUriInfo().getQueryParameters().entrySet()
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> String.join(",", e.getValue())));
+
     }
 
 }

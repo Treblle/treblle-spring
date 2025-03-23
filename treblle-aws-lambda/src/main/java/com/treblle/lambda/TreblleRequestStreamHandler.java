@@ -21,11 +21,18 @@ public class TreblleRequestStreamHandler implements RequestStreamHandler {
 
     private final RequestStreamHandler actualHandler;
     private final TreblleService treblleService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+    private String path;
 
     public TreblleRequestStreamHandler(RequestStreamHandler actualHandler, TreblleProperties treblleProperties) {
         this.actualHandler = actualHandler;
+        this.objectMapper = new ObjectMapper();
         this.treblleService = new TreblleServiceImpl(treblleProperties, objectMapper);
+    }
+
+    public TreblleRequestStreamHandler(RequestStreamHandler actualHandler, TreblleProperties treblleProperties, String path) {
+        this(actualHandler, treblleProperties);
+        this.path = path;
     }
 
     @Override
@@ -47,7 +54,7 @@ public class TreblleRequestStreamHandler implements RequestStreamHandler {
             JsonNode responseJson = objectMapper.readTree(response);
 
             try {
-                TrebllePayload payload = treblleService.createPayload(new StreamRequestContextWrapper(requestJson), new StreamResponseContextWrapper(responseJson), potentialException, responseTimeInMillis);
+                TrebllePayload payload = treblleService.createPayload(new StreamRequestContextWrapper(requestJson, path), new StreamResponseContextWrapper(responseJson), potentialException, responseTimeInMillis);
 
                 JsonNode requestBody = requestJson.get("body");
                 byte[] requestBodyBytes = requestBody != null ? objectMapper.writeValueAsBytes(requestBody) : null;

@@ -22,10 +22,16 @@ public class TreblleRequestHandler implements RequestHandler<APIGatewayProxyRequ
 
     private final RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> actualHandler;
     private final TreblleService treblleService;
+    private String path;
 
     public TreblleRequestHandler(RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> actualHandler, TreblleProperties treblleProperties) {
         this.actualHandler = actualHandler;
         this.treblleService = new TreblleServiceImpl(treblleProperties, new ObjectMapper());
+    }
+
+    public TreblleRequestHandler(RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> actualHandler, TreblleProperties treblleProperties, String path) {
+        this(actualHandler, treblleProperties);
+        this.path = path;
     }
 
     @Override
@@ -46,7 +52,7 @@ public class TreblleRequestHandler implements RequestHandler<APIGatewayProxyRequ
             final byte[] responseBody = Optional.ofNullable(apiGatewayProxyResponseEvent)
                     .map(APIGatewayProxyResponseEvent::getBody).map(String::getBytes).orElse(null);
             try {
-                TrebllePayload payload = treblleService.createPayload(new APIGatewayProxyRequestEventWrapper(apiGatewayProxyRequestEvent), new APIGatewayProxyResponseEventWrapper(apiGatewayProxyResponseEvent), potentialException, responseTimeInMillis);
+                TrebllePayload payload = treblleService.createPayload(new APIGatewayProxyRequestEventWrapper(apiGatewayProxyRequestEvent, path), new APIGatewayProxyResponseEventWrapper(apiGatewayProxyResponseEvent), potentialException, responseTimeInMillis);
                 treblleService.maskAndSendPayload(payload, requestBody, responseBody, potentialException);
             } catch (Exception exception) {
                 log.error("An error occurred while sending data to Treblle.", exception);

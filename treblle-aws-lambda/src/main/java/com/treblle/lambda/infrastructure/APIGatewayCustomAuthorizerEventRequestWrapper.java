@@ -67,6 +67,11 @@ public class APIGatewayCustomAuthorizerEventRequestWrapper implements RequestWra
         }
     }
 
+    @Override
+    public Map<String, String> getQueryParams() {
+        return request.getQueryStringParameters();
+    }
+
     private Map<String, String> getHeaders() {
         return Optional.ofNullable(request.getHeaders()).orElse(Collections.emptyMap());
     }

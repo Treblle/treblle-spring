@@ -1,6 +1,5 @@
 package com.treblle.common.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Map;
@@ -10,10 +9,7 @@ public class Response {
   private Map<String, String> headers;
   private Integer code;
   private Long size;
-
-  @JsonProperty("load_time")
-  private Double loadTime;
-
+  private Long load_time;
   private JsonNode body;
 
   public Map<String, String> getHeaders() {
@@ -40,12 +36,12 @@ public class Response {
     this.size = size;
   }
 
-  public Double getLoadTime() {
-    return loadTime;
+  public Long getLoad_time() {
+    return load_time;
   }
 
-  public void setLoadTime(Double loadTime) {
-    this.loadTime = loadTime;
+  public void setLoad_time(Long load_time) {
+    this.load_time = load_time;
   }
 
   public JsonNode getBody() {
@@ -55,4 +51,5 @@ public class Response {
   public void setBody(JsonNode body) {
     this.body = body;
   }
+
 }
