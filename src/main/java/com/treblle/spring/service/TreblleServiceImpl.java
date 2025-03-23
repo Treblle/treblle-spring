@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +52,10 @@ public class TreblleServiceImpl implements TreblleService {
   private static final Logger log = LoggerFactory.getLogger(TreblleServiceImpl.class);
 
   private static final DateTimeFormatter DATE_TIME_FORMATTER =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+  private static final Pattern IPV4_PATTERN =
+          Pattern.compile("^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$");
 
   private static final String TREBLLE_API_ENDPOINT = "https://rocknrolla.treblle.com";
   private static final String TREBLLE_API_KEY_HEADER = "x-api-key";
@@ -60,12 +64,11 @@ public class TreblleServiceImpl implements TreblleService {
 
   @Autowired private TreblleProperties properties;
 
-  @Autowired private ObjectMapper objectMapper;
-
   @Autowired private JsonMasker jsonMasker;
 
   @Autowired private RestTemplateBuilder restTemplateBuilder;
 
+  private ObjectMapper objectMapper;
   private RestTemplate client;
 
   @PostConstruct
@@ -78,6 +81,7 @@ public class TreblleServiceImpl implements TreblleService {
       throw new IllegalStateException("Treblle Project ID is required.");
     }
 
+    this.objectMapper = new ObjectMapper();
     this.client =
         restTemplateBuilder
             .setConnectTimeout(Duration.ofSeconds(1))
@@ -101,17 +105,18 @@ public class TreblleServiceImpl implements TreblleService {
     os.setRelease(System.getProperty("os.version"));
 
     final Server server = new Server();
-    server.setIp(environment.getProperty("server.address"));
+    server.setIp(filterIPv4Only(environment.getProperty("server.address")));
     server.setTimezone(TimeZone.getDefault().getID());
     server.setProtocol(httpRequest.getProtocol());
     server.setOs(os);
 
     final Request request = new Request();
     request.setTimestamp(ZonedDateTime.now(ZoneOffset.UTC).format(DATE_TIME_FORMATTER));
-    request.setIp(HttpUtils.getClientAddress(httpRequest));
-    request.setUserAgent(httpRequest.getHeader(HttpHeaders.USER_AGENT));
+    request.setIp(filterIPv4Only(HttpUtils.getClientAddress(httpRequest)));
+    request.setUser_agent(httpRequest.getHeader(HttpHeaders.USER_AGENT));
     request.setMethod(httpRequest.getMethod());
     request.setUrl(ServletUriComponentsBuilder.fromRequestUri(httpRequest).toUriString());
+    request.setQuery(request.getQuery());
     final Map<String, String> requestHeaders =
         readHeaders(Collections.list(httpRequest.getHeaderNames()), httpRequest::getHeader);
     if (!requestHeaders.isEmpty()) {
@@ -120,7 +125,7 @@ public class TreblleServiceImpl implements TreblleService {
 
     final Response response = new Response();
     response.setCode(chainException != null ? 500 : httpResponse.getStatus());
-    response.setLoadTime((double) (responseTimeInMillis / 1000f));
+    response.setLoad_time(responseTimeInMillis);
     final Map<String, String> responseHeaders =
         readHeaders(
             Optional.ofNullable(httpResponse.getHeaderNames()).orElseGet(Collections::emptyList),
@@ -136,11 +141,19 @@ public class TreblleServiceImpl implements TreblleService {
     data.setResponse(response);
 
     final TrebllePayload payload = new TrebllePayload();
-    payload.setApiKey(properties.getApiKey());
-    payload.setProjectId(properties.getProjectId());
+    payload.setApi_key(properties.getApiKey());
+    payload.setProject_id(properties.getProjectId());
     payload.setData(data);
 
     return payload;
+  }
+
+  private String filterIPv4Only(String ip) {
+    if (ip == null || ip.isEmpty()) {
+      return null;
+    }
+    boolean valid = IPV4_PATTERN.matcher(ip).matches();
+    return valid ? ip : null;
   }
 
   @Async
