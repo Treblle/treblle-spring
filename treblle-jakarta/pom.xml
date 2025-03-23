@@ -6,7 +6,7 @@
 
     <groupId>com.treblle</groupId>
     <artifactId>treblle-jakarta</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <name>treblle-jakarta</name>
     <description>Official Treblle SDK for Javax Servlet API 5.0.0 and Javax RS API 3.0.0</description>
     <url>https://github.com/Treblle/treblle-java</url>
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>com.treblle</groupId>
             <artifactId>treblle-common</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 
