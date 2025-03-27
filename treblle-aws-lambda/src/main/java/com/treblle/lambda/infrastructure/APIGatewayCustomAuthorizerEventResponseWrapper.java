@@ -9,6 +9,8 @@ import java.util.Optional;
 
 public class APIGatewayCustomAuthorizerEventResponseWrapper implements ResponseWrapper {
 
+    private static final String CONTEXT = "context";
+
     private static final String STATUS_CODE = "statusCode";
 
     private final Map<String, Object> response;
@@ -19,7 +21,10 @@ public class APIGatewayCustomAuthorizerEventResponseWrapper implements ResponseW
 
     @Override
     public int getStatus() {
-        return safeParseInteger(response.get(STATUS_CODE)).orElse(200);
+        return Optional.ofNullable(response.get(CONTEXT))
+                .flatMap(APIGatewayCustomAuthorizerEventResponseWrapper::getMapIfValid)
+                .flatMap(it -> safeParseInteger(it.get(STATUS_CODE)))
+                .orElse(200);
     }
 
     @Override
@@ -32,7 +37,7 @@ public class APIGatewayCustomAuthorizerEventResponseWrapper implements ResponseW
         return null;
     }
 
-    public static Optional<Integer> safeParseInteger(Object obj) {
+    private static Optional<Integer> safeParseInteger(Object obj) {
         if (obj == null) {
             return Optional.empty();
         }
@@ -52,6 +57,22 @@ public class APIGatewayCustomAuthorizerEventResponseWrapper implements ResponseW
             } catch (NumberFormatException e) {
                 // Ignore
             }
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Map<String, Object>> getMapIfValid(Object obj) {
+        if (obj instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) obj;
+
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (!(entry.getKey() instanceof String)) {
+                    return Optional.empty();
+                }
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> validMap = (Map<String, Object>) map;
+            return Optional.of(validMap);
         }
         return Optional.empty();
     }
