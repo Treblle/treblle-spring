@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 
@@ -38,8 +40,23 @@ public class TreblleFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest servletRequest, HttpServletResponse servletResponse,
                                                            FilterChain filterChain) throws ServletException, IOException {
 
-    final SpringRequestWrapper cachingRequest = new SpringRequestWrapper(servletRequest, getEnvironment());
-    final SpringResponseWrapper cachingResponse = new SpringResponseWrapper(servletResponse);
+    final SpringRequestWrapper request = new SpringRequestWrapper(servletRequest, getEnvironment());
+    final SpringResponseWrapper response = new SpringResponseWrapper(servletResponse);
+
+    ContentCachingRequestWrapper cachingRequest;
+    ContentCachingResponseWrapper cachingResponse;
+
+    if (servletRequest instanceof ContentCachingRequestWrapper) {
+      cachingRequest = (ContentCachingRequestWrapper) servletRequest;
+    } else {
+      cachingRequest = new ContentCachingRequestWrapper(servletRequest);
+    }
+
+    if (servletResponse instanceof ContentCachingResponseWrapper) {
+      cachingResponse = (ContentCachingResponseWrapper) servletResponse;
+    } else {
+      cachingResponse = new ContentCachingResponseWrapper(servletResponse);
+    }
 
     Exception potentialException = null;
     final long start = System.currentTimeMillis();
@@ -56,7 +73,7 @@ public class TreblleFilter extends OncePerRequestFilter {
       cachingResponse.copyBodyToResponse(); // Important
 
       try {
-        TrebllePayload payload = treblleService.createPayload(cachingRequest, cachingResponse, potentialException, responseTimeInMillis);
+        TrebllePayload payload = treblleService.createPayload(request, response, potentialException, responseTimeInMillis);
         treblleService.maskAndSendPayload(payload, requestBody, responseBody, potentialException);
       } catch (Exception exception) {
         log.error("An error occurred while sending data to Treblle.", exception);
