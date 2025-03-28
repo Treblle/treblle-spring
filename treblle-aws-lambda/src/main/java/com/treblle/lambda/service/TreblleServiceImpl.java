@@ -5,6 +5,7 @@ import com.treblle.common.configuration.TreblleProperties;
 import com.treblle.common.dto.TrebllePayload;
 import com.treblle.common.service.AbstractTreblleService;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -12,12 +13,12 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static com.treblle.common.utils.HttpUtils.APPLICATION_JSON_VALUE;
 
@@ -37,7 +38,12 @@ public class TreblleServiceImpl extends AbstractTreblleService {
         httpPost.setHeader("Content-Type", APPLICATION_JSON_VALUE);
         httpPost.setHeader(TREBLLE_API_KEY_HEADER, treblleProperties.getApiKey());
 
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofSeconds(treblleProperties.getConnectTimeoutInSeconds()))
+                .setResponseTimeout(Timeout.ofSeconds(treblleProperties.getReadTimeoutInSeconds()))
+                .build();
         HttpClientBuilder httpClientBuilder = HttpClients.custom().disableAutomaticRetries();
+        httpClientBuilder.setDefaultRequestConfig(requestConfig);
         if (treblleProperties.isDebug()) {
             httpClientBuilder
                     .addRequestInterceptorFirst(new RequestLogger())

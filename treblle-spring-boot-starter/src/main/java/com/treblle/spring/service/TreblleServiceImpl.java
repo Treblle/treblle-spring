@@ -44,8 +44,8 @@ public class TreblleServiceImpl extends AbstractTreblleService {
 
     this.restTemplate =
             restTemplateBuilder
-                    .setConnectTimeout(Duration.ofSeconds(1))
-                    .setReadTimeout(Duration.ofSeconds(1))
+                    .setConnectTimeout(Duration.ofSeconds(treblleProperties.getConnectTimeoutInSeconds()))
+                    .setReadTimeout(Duration.ofSeconds(treblleProperties.getReadTimeoutInSeconds()))
                     .build();
   }
 

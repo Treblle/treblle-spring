@@ -17,6 +17,8 @@ public class SpringTreblleProperties implements TreblleProperties {
   private boolean debug = false;
   private List<String> urlPatterns = Collections.emptyList();
   private List<String> maskingKeywords = Collections.emptyList();
+  private int connectTimeoutInSeconds = 3;
+  private int readTimeoutInSeconds = 3;
 
   @Override
   public String getEndpoint() {
@@ -78,6 +80,24 @@ public class SpringTreblleProperties implements TreblleProperties {
 
   public void setMaskingKeywords(List<String> maskingKeywords) {
     this.maskingKeywords = maskingKeywords;
+  }
+
+  @Override
+  public int getConnectTimeoutInSeconds() {
+    return connectTimeoutInSeconds;
+  }
+
+  public void setConnectTimeoutInSeconds(int connectTimeoutInSeconds) {
+    this.connectTimeoutInSeconds = connectTimeoutInSeconds;
+  }
+
+  @Override
+  public int getReadTimeoutInSeconds() {
+    return readTimeoutInSeconds;
+  }
+
+  public void setReadTimeoutInSeconds(int readTimeoutInSeconds) {
+    this.readTimeoutInSeconds = readTimeoutInSeconds;
   }
 
 }

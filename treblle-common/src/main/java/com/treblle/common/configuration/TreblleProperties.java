@@ -24,4 +24,12 @@ public interface TreblleProperties {
         return List.of();
     }
 
+    default int getConnectTimeoutInSeconds() {
+        return 3;
+    }
+
+    default int getReadTimeoutInSeconds() {
+        return 3;
+    }
+
 }

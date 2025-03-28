@@ -12,6 +12,8 @@ public class TrebllePropertiesBuilder {
     private boolean debug = false;
     private List<String> urlPatterns;
     private List<String> maskingKeywords;
+    private int connectTimeoutInSeconds;
+    private int readTimeoutInSeconds;
 
     public TrebllePropertiesBuilder(String apiKey, String projectId) {
         this.apiKey = apiKey;
@@ -41,8 +43,18 @@ public class TrebllePropertiesBuilder {
         return this;
     }
 
+    public TrebllePropertiesBuilder setConnectTimeoutInSeconds(int connectTimeoutInSeconds) {
+        this.connectTimeoutInSeconds = connectTimeoutInSeconds;
+        return this;
+    }
+
+    public TrebllePropertiesBuilder setReadTimeoutInSeconds(int readTimeoutInSeconds) {
+        this.readTimeoutInSeconds = readTimeoutInSeconds;
+        return this;
+    }
+
     public TreblleProperties build() {
-        return new TrebllePropertiesImpl(endpoint, apiKey, projectId, debug, urlPatterns, maskingKeywords);
+        return new TrebllePropertiesImpl(endpoint, apiKey, projectId, debug, urlPatterns, maskingKeywords, connectTimeoutInSeconds, readTimeoutInSeconds);
     }
 
     private static class TrebllePropertiesImpl implements TreblleProperties {
@@ -53,14 +65,18 @@ public class TrebllePropertiesBuilder {
         private final boolean debug;
         private final List<String> urlPatterns;
         private final List<String> maskingKeywords;
+        private final int connectTimeoutInSeconds;
+        private final int readTimeoutInSeconds;
 
-        private TrebllePropertiesImpl(String endpoint, String apiKey, String projectId, boolean debug, List<String> urlPatterns, List<String> maskingKeywords) {
+        private TrebllePropertiesImpl(String endpoint, String apiKey, String projectId, boolean debug, List<String> urlPatterns, List<String> maskingKeywords, int connectTimeoutInSeconds, int readTimeoutInSeconds) {
             this.endpoint = endpoint;
             this.apiKey = apiKey;
             this.projectId = projectId;
             this.debug = debug;
             this.urlPatterns = urlPatterns;
             this.maskingKeywords = maskingKeywords;
+            this.connectTimeoutInSeconds = connectTimeoutInSeconds;
+            this.readTimeoutInSeconds = readTimeoutInSeconds;
         }
 
         @Override
@@ -91,6 +107,16 @@ public class TrebllePropertiesBuilder {
         @Override
         public List<String> getMaskingKeywords() {
             return maskingKeywords;
+        }
+
+        @Override
+        public int getConnectTimeoutInSeconds() {
+            return connectTimeoutInSeconds;
+        }
+
+        @Override
+        public int getReadTimeoutInSeconds() {
+            return readTimeoutInSeconds;
         }
 
     }
