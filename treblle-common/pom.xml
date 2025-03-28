@@ -6,7 +6,7 @@
 
     <groupId>com.treblle</groupId>
     <artifactId>treblle-common</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
     <name>treblle-common</name>
     <description>Official Treblle common Java library</description>
     <url>https://github.com/Treblle/treblle-java</url>
