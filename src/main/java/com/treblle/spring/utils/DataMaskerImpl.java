@@ -98,7 +98,7 @@ public class DataMaskerImpl implements DataMasker {
               if (matchesMaskingKeywords(entry.getKey()) && Objects.nonNull(entry.getValue())) {
                 return MASKED_VALUE;
               } else {
-                return entry.getValue();
+                return entry.getValue() != null ? entry.getValue() : "";
               }
             }
     ));
