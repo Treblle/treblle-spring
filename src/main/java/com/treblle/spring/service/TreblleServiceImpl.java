@@ -208,7 +208,14 @@ public class TreblleServiceImpl implements TreblleService {
   }
 
   private Map<String, String> readHeaders(Collection<String> headers, UnaryOperator<String> extractor) {
-    return dataMasker.mask(headers.stream().collect(Collectors.toMap(name -> name, extractor, (first, second) -> first)));
+    return dataMasker.mask(headers.stream()
+            .collect(Collectors.toMap(
+                    name -> name,
+                    name -> {
+                      String value = extractor.apply(name);
+                      return value != null ? value : "";
+                    },
+                    (first, second) -> first)));
   }
 
   private JsonNode readBody(byte[] body, Consumer<RuntimeError> errorConsumer) {
