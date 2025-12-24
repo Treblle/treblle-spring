@@ -27,10 +27,12 @@ Add the following dependency:
     <dependency>
         <groupId>com.treblle</groupId>
         <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.6</version>
     </dependency>
 </dependencies>
 ```
+
+**Note:** This 1.x version is compatible with Spring Boot 2.4.x and Java 8+. For Spring Boot 3.x and Java 17+, please use version 2.x from the `main` branch.
 
 ## Getting started
 
