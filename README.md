@@ -81,11 +81,13 @@ For Spring Boot `2.4.X` with `Java 8` and higher:
     <dependency>
         <groupId>com.treblle</groupId>
         <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.6</version>
     </dependency>
   <!-- Other dependencies -->
 </dependencies>
 ```
+
+**Note:** Version 1.x is maintained on the `1.x-java8` branch for legacy support.
 
 For Spring Boot `3.X` with `Java 17` and higher:
 ```xml
@@ -94,7 +96,7 @@ For Spring Boot `3.X` with `Java 17` and higher:
     <dependency>
         <groupId>com.treblle</groupId>
         <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>2.0.4</version>
+        <version>2.0.11</version>
     </dependency>
   <!-- Other dependencies -->
 </dependencies>
