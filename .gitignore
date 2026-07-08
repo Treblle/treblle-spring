@@ -165,3 +165,25 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,gradle,intellij+all
+
+### Claude Code / AI agent tooling ###
+# Local, machine-specific Claude Code settings and state
+.claude/
+CLAUDE.local.md
+# Root project instructions are personal here; un-ignore if you want to share them:
+CLAUDE.md
+# To commit a shared config instead, negate the specific file, e.g.:
+#   !.claude/settings.json
+#   !CLAUDE.md
+
+# Other AI assistants / editors
+.cursor/
+.cursorrules
+.aider*
+.windsurfrules
+.github/copilot-instructions.md
+
+# Agent scratch / temp output
+scratchpad/
+*.local
+

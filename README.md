@@ -1,8 +1,8 @@
-# Treblle - Runtime Intelligence Platform
+# Treblle — Enterprise Runtime Intelligence Platform
 
 [Website](https://treblle.com/) • [Documentation](https://docs.treblle.com/) • [Pricing](https://treblle.com/pricing)
 
-Discover, Govern, and Secure APIs, Agents, and AI Across Any Cloud, Gateway or Technology.
+Discover and secure your APIs and Agents across any cloud, gateway, or technology.
 
 ## Treblle Spring Boot SDK
 

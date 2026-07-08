@@ -9,10 +9,11 @@
     <version>3.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Treblle Spring Boot Starter</name>
+    <name>Treblle Spring Boot SDK</name>
     <description>
-        Treblle SDK for Spring Boot. Captures API requests and responses, masks sensitive data,
-        and sends the data to Treblle Ingress asynchronously with zero impact on the host API.
+        Treblle — Enterprise Runtime Intelligence Platform. Discover and secure your APIs and Agents
+        across any cloud, gateway, or technology. This SDK captures API requests and responses, masks
+        sensitive data, and sends the data to Treblle Ingress asynchronously with zero impact on the host API.
     </description>
     <url>https://github.com/Treblle/treblle-spring</url>
 
@@ -26,9 +27,9 @@
 
     <developers>
         <developer>
-            <id>treblle</id>
-            <name>Treblle</name>
-            <email>support@treblle.com</email>
+            <id>cindreta</id>
+            <name>Vedran Cindric</name>
+            <email>vedran@treblle.com</email>
             <organization>Treblle</organization>
             <organizationUrl>https://treblle.com</organizationUrl>
         </developer>
