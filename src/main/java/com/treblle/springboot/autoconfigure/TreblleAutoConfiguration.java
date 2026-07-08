@@ -132,7 +132,12 @@ public class TreblleAutoConfiguration {
                 + ", ingressEndpoint=" + properties.getIngressEndpoint()
                 + ", maskedKeywords=" + properties.getMaskedKeywords().size()
                 + ", excludedPaths=" + properties.getExcludedPaths().size()
-                + ", sdkToken=" + (properties.getSdkToken() != null ? "set" : "MISSING")
-                + ", apiKey=" + (properties.getApiKey() != null ? "set" : "MISSING") + ".");
+                + ", sdkToken=" + credentialState(properties.getSdkToken())
+                + ", apiKey=" + credentialState(properties.getApiKey()) + ".");
+    }
+
+    /** Reports a credential as "set" only when it is present and non-blank; otherwise "MISSING". */
+    private static String credentialState(String value) {
+        return value != null && !value.isBlank() ? "set" : "MISSING";
     }
 }

@@ -187,3 +187,8 @@ CLAUDE.md
 scratchpad/
 *.local
 
+### Example / demo API ###
+# Local end-to-end test harness for the SDK (holds Treblle credentials in .env).
+# Not part of the published SDK. The shareable contract lives in the committed openapi.yaml.
+example-api/
+
