@@ -1,227 +1,215 @@
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/e9845001-32c7-4fbf-b044-0f509fd15ce1"/>
-</div>
-<div align="center">
+# Treblle - Runtime Intelligence Platform
 
-# Treblle
+[Website](https://treblle.com/) • [Documentation](https://docs.treblle.com/) • [Pricing](https://treblle.com/pricing)
 
-<a href="https://docs.treblle.com/en/integrations" target="_blank">Integrations</a>
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-<a href="http://treblle.com/" target="_blank">Website</a>
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-<a href="https://docs.treblle.com" target="_blank">Docs</a>
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-<a href="https://blog.treblle.com" target="_blank">Blog</a>
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-<a href="https://twitter.com/treblleapi" target="_blank">Twitter</a>
-<span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-<a href="https://treblle.com/chat" target="_blank">Discord</a>
-<br />
+Discover and secure your APIs and Agents across any cloud, gateway, or technology.
 
-  <hr />
-</div>
+---
 
-API Intelligence Platform. 🚀
+## Treblle Spring Boot SDK
 
-Treblle is a lightweight SDK that helps Engineering and Product teams build, ship & maintain REST-based APIs faster.
+The Treblle Spring Boot SDK is a Spring Boot auto-configuration starter that captures every API
+request and response on your application, masks sensitive data before anything leaves your server,
+and ships the data to Treblle asynchronously. All expensive work happens after the response has been
+flushed to the client, so the SDK adds no measurable latency and by design - can never break your API.
 
-## Features
+## Requirements
 
-<div align="center">
-  <br />
-  <img src="https://github.com/user-attachments/assets/58be66d4-c101-4ec1-b6c3-fd33477ddddb"/>
-  <br />
-  <br />
-</div>
+- Java 17 or newer
+- Spring Boot 3.x (Spring MVC / Servlet stack)
+- A Treblle account with an **SDK Token** and **API Key** from the [Treblle dashboard](https://treblle.com)
 
-- [API Monitoring & Observability](https://www.treblle.com/features/api-monitoring-observability)
-- [Auto-generated API Docs](https://www.treblle.com/features/auto-generated-api-docs)
-- [API analytics](https://www.treblle.com/features/api-analytics)
-- [Treblle API Score](https://www.treblle.com/features/api-quality-score)
-- [API Lifecycle Collaboration](https://www.treblle.com/features/api-lifecycle)
-- [Native Treblle Apps](https://www.treblle.com/features/native-apps)
+> For Spring Boot 2.x support as well as older Java version visit the v2 branch.
 
+## Installation
 
-## How Treblle Works
-Once you’ve integrated a Treblle SDK in your codebase, this SDK will send requests and response data to your Treblle Dashboard.
+### 1. Install the SDK
 
-In your Treblle Dashboard you get to see real-time requests to your API, auto-generated API docs, API analytics like how fast the response was for an endpoint, the load size of the response, etc.
-
-Treblle also uses the requests sent to your Dashboard to calculate your API score which is a quality score that’s calculated based on the performance, quality, and security best practices for your API.
-
-> Visit [https://docs.treblle.com](http://docs.treblle.com) for the complete documentation.
-
-## Security
-
-### Masking fields
-Masking fields ensure certain sensitive data are removed before being sent to Treblle.
-
-To make sure masking is done before any data leaves your server [we built it into all our SDKs](https://docs.treblle.com/en/security/masked-fields#fields-masked-by-default).
-
-This means data masking is super fast and happens on a programming level before the API request is sent to Treblle. You can [customize](https://docs.treblle.com/en/security/masked-fields#custom-masked-fields) exactly which fields are masked when you’re integrating the SDK.
-
-> Visit the [Masked fields](https://docs.treblle.com/en/security/masked-fields) section of the [docs](https://docs.sailscasts.com) for the complete documentation.
-
-
-## Get Started
-
-1. Sign in to [Treblle](https://platform.treblle.com).
-2. [Create a Treblle project](https://docs.treblle.com/en/dashboard/projects#creating-a-project).
-3. [Setup the SDK](#install-the-SDK) for your platform.
-
-### Install the SDK
-
-Add the subsequent dependency to your `pom.xml` file while ensuring it aligns with your Spring Boot version:
-
-For Spring Boot `2.4.X` with `Java 8` and higher:
+Add the dependency to your `pom.xml`:
 
 ```xml
-<dependencies>
-  <!-- Other dependencies -->
-    <dependency>
-        <groupId>com.treblle</groupId>
-        <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>1.0.6</version>
-    </dependency>
-  <!-- Other dependencies -->
-</dependencies>
+<dependency>
+    <groupId>com.treblle</groupId>
+    <artifactId>treblle-spring-boot-starter</artifactId>
+    <version>3.0.0</version>
+</dependency>
 ```
 
-**Note:** Version 1.x is maintained on the `1.x-java8` branch for legacy support.
+Or, for Gradle (`build.gradle`):
 
-For Spring Boot `3.X` with `Java 17` and higher:
-```xml
-<dependencies>
-  <!-- Other dependencies -->
-    <dependency>
-        <groupId>com.treblle</groupId>
-        <artifactId>treblle-spring-boot-starter</artifactId>
-        <version>2.0.11</version>
-    </dependency>
-  <!-- Other dependencies -->
-</dependencies>
+```groovy
+implementation 'com.treblle:treblle-spring-boot-starter:3.0.0'
 ```
 
-Get your [API key](https://docs.treblle.com/en/dashboard#accessing-your-api-key) and [Project ID](https://docs.treblle.com/en/dashboard/projects#project-id) from the Treblle dashboard. After you have those, simply initialize Treblle in your project like so:
+That is all the wiring you need - the starter auto-configures itself. There are no filters, beans,
+or annotations to register manually.
 
-Annotate the desired configuration with `@EnableTreblle`
+### 2. Configure the SDK
 
-```java
-@EnableTreblle
-@SpringBootApplication
-public class MyApplication {
-  
-    public static void main(String[] args) {
-        SpringApplication.run(MyApplication.class, args);
-    }
-    
-}
-```
-
-Configure the following properties in your `application.properties` file:
+Add your credentials to `application.properties`:
 
 ```properties
-treblle.endpoint=<OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle.com
-treblle.apiKey=<API_KEY>
-treblle.projectId=<PROJECT_ID>
-treblle.filter-order=<ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
-treblle.debug=false # Default is false
-treblle.masking-keywords=<ADDITIONAL_KEYWORDS_TO_MASK> # Additional masking keywords separated by comma, to mask whole objects use <keyword>.*
+treblle.sdk-token=YOUR_SDK_TOKEN
+treblle.api-key=YOUR_API_KEY
 ```
 
-In case you are using the `application.yml` file:
+Or `application.yml`:
 
 ```yaml
 treblle:
-  endpoint: <OPTIONAL_ENDPOINT_URL> # Default is https://rocknrolla.treblle.com
-  api-key: <API_KEY>
-  project-id: <PROJECT_ID>
-  filter-order: <ORDER_OF_TREBLLE_FILTER> # Default Ordered.LOWEST_PRECEDENCE - 10, similar to Springs HttpTraceFilter
-  debug: false # Default is false
-  masking-keywords: <ADDITIONAL_KEYWORDS_TO_MASK> # Additional masking keywords separated by comma, to mask whole objects use <keyword>.*
+  sdk-token: YOUR_SDK_TOKEN
+  api-key: YOUR_API_KEY
 ```
 
-That's it. Your API requests and responses are now being sent to your Treblle project.
+Every option can also be supplied through a `TREBLLE_*` environment variable (Spring Boot relaxed
+binding). Explicitly declared properties take precedence over environment variables:
 
-#### Need to disable Treblle processing based on certain request conditions? Just implement the following bean:
+```bash
+export TREBLLE_SDK_TOKEN=YOUR_SDK_TOKEN
+export TREBLLE_API_KEY=YOUR_API_KEY
+```
+
+#### All configuration options
+
+| Property | Env var | Type | Required | Default | Description |
+|---|---|---|---|---|---|
+| `treblle.sdk-token` | `TREBLLE_SDK_TOKEN` | String | **Yes** | - | SDK Token from the Treblle dashboard. Sent as `sdk_token` and as the `x-api-key` header. |
+| `treblle.api-key` | `TREBLLE_API_KEY` | String | **Yes** | - | API Key from the Treblle dashboard. Sent as `api_key`. |
+| `treblle.debug` | `TREBLLE_DEBUG` | boolean | No | `false` | Enables verbose local logging of all SDK activity. |
+| `treblle.masked-keywords` | `TREBLLE_MASKED_KEYWORDS` | List&lt;String&gt; | No | `password, pwd, secret, password_confirmation, cc, card_number, ccv, ssn, authorization, api_key` | Keys whose values are masked before sending. **Masked by default** - override to customize, or set to empty to disable masking entirely. |
+| `treblle.excluded-paths` | `TREBLLE_EXCLUDED_PATHS` | List&lt;String&gt; | No | `[]` | Route paths the SDK must not track. Exact paths and `/prefix/*` wildcards. Case-sensitive. |
+| `treblle.ingress-endpoint` | `TREBLLE_INGRESS_ENDPOINT` | String | No | `https://ingress.treblle.com` | Treblle Ingress URL. Point at a regional or self-hosted endpoint. |
+| `treblle.enabled` | `TREBLLE_ENABLED` | boolean | No | `true` | Master switch. When `false`, the SDK sends nothing. |
+
+A complete example:
+
+```properties
+treblle.sdk-token=YOUR_SDK_TOKEN
+treblle.api-key=YOUR_API_KEY
+treblle.debug=false
+treblle.enabled=true
+treblle.ingress-endpoint=https://ingress.treblle.com
+treblle.masked-keywords=password,pwd,secret,password_confirmation,cc,card_number,ccv,ssn,authorization,api_key
+treblle.excluded-paths=/health,/actuator/*,/admin/*
+```
+
+> If `treblle.sdk-token` or `treblle.api-key` is missing, the SDK silently disables itself and never
+> throws. Enable `treblle.debug=true` to see a warning explaining why nothing is being sent.
+
+### 3. Verify it works
+
+1. Start your application and make a request to any of your API endpoints.
+2. Open your API in the [Treblle dashboard](https://app.treblle.com) - the request should appear
+   within a few seconds.
+3. If nothing shows up, set `treblle.debug=true` and restart. The SDK will log its resolved
+   configuration, initialization status, each captured request, every outgoing send, and Treblle's
+   responses under the `com.treblle` logger - enough to pinpoint any configuration problem.
+
+## Data masking
+
+Masking happens entirely on your server, before any data is sent to Treblle. The
+`treblle.masked-keywords` list drives it:
+
+- **Secure by default.** A standard set of sensitive keys (`password`, `pwd`, `secret`,
+  `password_confirmation`, `cc`, `card_number`, `ccv`, `ssn`, `authorization`, `api_key`) is masked
+  out of the box. Override `treblle.masked-keywords` to customize it, or set it to empty to disable
+  masking entirely (a warning is logged in debug mode when masking is off).
+- Matching is **case-insensitive** and applies to request bodies, response bodies, request headers,
+  and response headers. Query-string values are masked in the captured `query` map, and the raw URL
+  is recorded without its query string so no unmasked query value can leak through it.
+- Each character of a matched value is replaced with `*`, preserving the original length
+  (`"secret123"` → `"*********"`).
+- Nested objects and arrays are handled recursively; array items are masked individually while the
+  array structure is preserved.
+- For `Authorization`-style headers, the auth scheme is preserved and only the credentials are
+  masked (`"Bearer secret123"` → `"Bearer *********"`).
+- `null` and empty values are left untouched.
+
+```properties
+treblle.masked-keywords=password,authorization,credit_card,ssn,cvv
+```
+
+Given a request body of:
+
+```json
+{ "email": "alice@example.com", "password": "s3cr3t", "card": { "cvv": "123" } }
+```
+
+Treblle receives:
+
+```json
+{ "email": "alice@example.com", "password": "******", "card": { "cvv": "***" } }
+```
+
+## Excluding paths
+
+Use `treblle.excluded-paths` to stop tracking specific routes. It accepts exact paths and wildcard
+prefixes, and matching is case-sensitive:
+
+```properties
+# Exact path
+treblle.excluded-paths=/health
+# Wildcard prefix: excludes everything under /admin/
+treblle.excluded-paths=/health,/admin/*,/actuator/*
+```
+
+In addition to your configured exclusions, the SDK automatically skips static and infrastructure
+resources so they never reach Treblle: images, CSS, JavaScript, fonts, media, `favicon.ico`,
+`.well-known/` paths, `.env` files, and similar. Non-JSON request/response bodies are still captured
+but replaced with a short "not valid JSON" message rather than the raw content.
+
+## Per-request metadata
+
+Attach custom key/value metadata to the current request from anywhere on the request thread
+(controller, service, interceptor) using the static `TreblleMetadata` helper:
 
 ```java
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
+import com.treblle.springboot.metadata.TreblleMetadata;
+import org.springframework.web.bind.annotation.*;
 
-@Primary
-@Component
-public class MyTreblleConfiguration implements TreblleConfiguration {
+@RestController
+public class OrderController {
 
-  @Override
-  public boolean shouldProcess(HttpServletRequest servletRequest) {
-    // You custom logic in deciding if the request should be processed. Default implementation returns true.
-    return true;
-  }
-
+    @PostMapping("/orders")
+    public Order create(@RequestBody OrderRequest request) {
+        TreblleMetadata.add("tenant", request.getTenantId());
+        TreblleMetadata.add("plan", "enterprise");
+        TreblleMetadata.add("is_trial", false);
+        return orderService.create(request);
+    }
 }
 ```
 
-> See the [docs]() for this SDK to learn more.
+Metadata accepts `String`, `Number`, and `Boolean` values, and is sent in the payload's `metadata`
+object. It is cleared automatically once the request completes.
 
-## Available SDKs
+> **Metadata is NOT masked.** Never put secrets, credentials, tokens, or personal data in metadata.
 
-Treblle provides [open-source SDKs](https://docs.treblle.com/en/integrations) that let you seamlessly integrate Treblle with your REST-based APIs.
+## Debug mode
 
-- [`treblle-laravel`](https://github.com/Treblle/treblle-laravel): SDK for Laravel
-- [`treblle-php`](https://github.com/Treblle/treblle-php): SDK for PHP
-- [`treblle-symfony`](https://github.com/Treblle/treblle-symfony): SDK for Symfony
-- [`treblle-lumen`](https://github.com/Treblle/treblle-lumen): SDK for Lumen
-- [`treblle-sails`](https://github.com/Treblle/treblle-sails): SDK for Sails
-- [`treblle-adonisjs`](https://github.com/Treblle/treblle-adonisjs): SDK for AdonisJS
-- [`treblle-fastify`](https://github.com/Treblle/treblle-fastify): SDK for Fastify
-- [`treblle-directus`](https://github.com/Treblle/treblle-directus): SDK for Directus
-- [`treblle-strapi`](https://github.com/Treblle/treblle-strapi): SDK for Strapi
-- [`treblle-express`](https://github.com/Treblle/treblle-express): SDK for Express
-- [`treblle-koa`](https://github.com/Treblle/treblle-koa): SDK for Koa
-- [`treblle-go`](https://github.com/Treblle/treblle-go): SDK for Go
-- [`treblle-ruby`](https://github.com/Treblle/treblle-ruby): SDK for Ruby on Rails
-- [`treblle-python`](https://github.com/Treblle/treblle-python): SDK for Python/Django
+Enable debug mode to diagnose SDK issues:
 
-> See the [docs](https://docs.treblle.com/en/integrations) for more on SDKs and Integrations.
+```properties
+treblle.debug=true
+```
 
-## Other Packages
+When enabled, the SDK logs (under the `com.treblle` logger):
 
-Besides the SDKs, we also provide helpers and configuration used for SDK
-development. If you're thinking about contributing to or creating a SDK, have a look at the resources
-below:
+- Resolved configuration and initialization status, so you can confirm the SDK is enabled.
+- Warnings when required configuration is missing, or when masking is disabled because
+  `masked-keywords` is empty.
+- Data-collection events and skipped/excluded paths.
+- Every outgoing send to Treblle, Treblle's responses, circuit-breaker state transitions, dropped
+  payloads, and any exceptions or HTTP errors that occur while sending.
 
-- [`treblle-utils`](https://github.com/Treblle/treblle-utils):  A set of helpers and
-  utility functions useful for the JavaScript SDKs.
-- [`php-utils`](https://github.com/Treblle/php-utils):   A set of helpers and
-  utility functions useful for the PHP SDKs.
+If data isn't appearing in your dashboard, turn on debug mode first - the logs will tell you whether
+the SDK is disabled, whether your credentials are set, and whether Ingress is responding.
 
-## Community 💙
+## Support
 
-First and foremost: **Star and watch this repository** to stay up-to-date.
+- Documentation: [https://docs.treblle.com/](https://docs.treblle.com/)
+- Report issues: [GitHub Issues](https://github.com/Treblle/treblle-spring/issues)
 
-Also, follow our [Blog](https://blog.treblle.com), and on [Twitter](https://twitter.com/treblleapi).
+## License
 
-You can chat with the team and other members on [Discord](https://treblle.com/chat) and follow our tutorials and other video material at [YouTube](https://youtube.com/@treblle).
-
-[![Treblle Discord](https://img.shields.io/badge/Treblle%20Discord-Join%20our%20Discord-F3F5FC?labelColor=7289DA&style=for-the-badge&logo=discord&logoColor=F3F5FC&link=https://treblle.com/chat)](https://treblle.com/chat)
-
-[![Treblle YouTube](https://img.shields.io/badge/Treblle%20YouTube-Subscribe%20on%20YouTube-F3F5FC?labelColor=c4302b&style=for-the-badge&logo=YouTube&logoColor=F3F5FC&link=https://youtube.com/@treblle)](https://youtube.com/@treblle)
-
-[![Treblle on Twitter](https://img.shields.io/badge/Treblle%20on%20Twitter-Follow%20Us-F3F5FC?labelColor=1DA1F2&style=for-the-badge&logo=Twitter&logoColor=F3F5FC&link=https://twitter.com/treblleapi)](https://twitter.com/treblleapi)
-
-### How to contribute
-
-Here are some ways of contributing to making Treblle better:
-
-- **[Try out Treblle](https://docs.treblle.com/en/introduction#getting-started)**, and let us know ways to make Treblle better for you. Let us know here on [Discord](https://treblle.com/chat).
-- Join our [Discord](https://treblle.com/chat) and connect with other members to share and learn from.
-- Send a pull request to any of our [open source repositories](https://github.com/Treblle) on Github. Check the contribution guide on the repo you want to contribute to for more details about how to contribute. We're looking forward to your contribution!
-
-### Contributors
-<!-- Replace link with the link of the SDK contributors-->
-<a href="https://github.com/Treblle/treblle-spring/graphs/contributors">
-  <p align="center">
-    <img  src="https://contrib.rocks/image?repo=Treblle/treblle-spring" alt="A table of avatars from the project's contributors" />
-  </p>
-</a>
+The MIT License (MIT). See [LICENSE](LICENSE) for details.
