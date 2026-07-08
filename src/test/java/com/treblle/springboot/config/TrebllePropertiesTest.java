@@ -34,8 +34,17 @@ class TrebllePropertiesTest {
         assertTrue(p.isEnabled());
         assertFalse(p.isDebug());
         assertEquals("https://ingress.treblle.com", p.getIngressEndpoint());
-        assertTrue(p.getMaskedKeywords().isEmpty());
         assertTrue(p.getExcludedPaths().isEmpty());
+    }
+
+    @Test
+    void masksSensitiveKeysByDefault() {
+        TreblleProperties p = new TreblleProperties();
+        // Secure-by-default: the standard sensitive-key set is masked out of the box.
+        assertFalse(p.getMaskedKeywords().isEmpty());
+        assertTrue(p.getMaskedKeywords().contains("password"));
+        assertTrue(p.getMaskedKeywords().contains("authorization"));
+        assertEquals(TreblleProperties.DEFAULT_MASKED_KEYWORDS, p.getMaskedKeywords());
     }
 
     @Test

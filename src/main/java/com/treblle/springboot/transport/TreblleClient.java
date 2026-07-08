@@ -1,7 +1,9 @@
 package com.treblle.springboot.transport;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.treblle.springboot.collector.RawRequestData;
 import com.treblle.springboot.config.TreblleProperties;
+import com.treblle.springboot.core.PayloadFactory;
 import com.treblle.springboot.core.TreblleLogger;
 import com.treblle.springboot.core.model.TrebllePayload;
 
@@ -26,6 +28,7 @@ import java.util.zip.GZIPOutputStream;
  * Fire-and-forget transport to Treblle Ingress.
  *
  * <ul>
+ *   <li>Builds and masks the payload on a worker thread — never on the request thread.</li>
  *   <li>GZIP-compresses the payload.</li>
  *   <li>Sends with a shared, connection-pooling {@link HttpClient} (keep-alive).</li>
  *   <li>Uses a bounded queue + a small worker pool so a Treblle outage can never grow host memory;
@@ -33,6 +36,10 @@ import java.util.zip.GZIPOutputStream;
  *   <li>Applies a short hard timeout and never retries in the request path.</li>
  *   <li>Consults the {@link CircuitBreaker} before every send and feeds it the response status.</li>
  * </ul>
+ *
+ * <p>The request thread only hands over a {@link RawRequestData} (cheap references it already
+ * captured). All expensive work — payload building, masking, serialization, compression, HTTP —
+ * happens here, off-thread.</p>
  *
  * <p>Every operation is wrapped so it can never throw into the host application.</p>
  */
@@ -46,6 +53,7 @@ public class TreblleClient {
     private final ObjectMapper objectMapper;
     private final TreblleLogger logger;
     private final CircuitBreaker circuitBreaker;
+    private final PayloadFactory payloadFactory;
     private final HttpClient httpClient;
     private final ExecutorService executor;
     private final BlockingQueue<Runnable> queue;
@@ -53,11 +61,13 @@ public class TreblleClient {
     public TreblleClient(TreblleProperties properties,
                          ObjectMapper objectMapper,
                          TreblleLogger logger,
-                         CircuitBreaker circuitBreaker) {
+                         CircuitBreaker circuitBreaker,
+                         PayloadFactory payloadFactory) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.logger = logger;
         this.circuitBreaker = circuitBreaker;
+        this.payloadFactory = payloadFactory;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(2_000))
                 .version(HttpClient.Version.HTTP_1_1)
@@ -81,20 +91,29 @@ public class TreblleClient {
     }
 
     /**
-     * Enqueues a payload for asynchronous delivery. Returns immediately; the host request thread is
-     * never blocked. Dropped silently (with a debug log) if the circuit breaker is open or the queue
-     * is saturated.
+     * Enqueues captured request data for asynchronous processing and delivery. Returns immediately;
+     * the host request thread is never blocked. The payload is built, masked, serialized, compressed
+     * and sent entirely on a worker thread. Dropped silently (with a debug log) if the queue is
+     * saturated, or later if the circuit breaker is backing off.
      */
-    public void send(TrebllePayload payload) {
+    public void send(RawRequestData raw) {
+        try {
+            executor.execute(() -> process(raw));
+        } catch (Throwable t) {
+            // Queue saturated or executor rejected: drop silently.
+            logger.warn("Payload dropped: dispatcher unavailable (" + t.getClass().getSimpleName() + ").");
+        }
+    }
+
+    private void process(RawRequestData raw) {
         try {
             if (!circuitBreaker.tryAcquire()) {
                 logger.info("Payload dropped: circuit breaker is backing off.");
                 return;
             }
-            executor.execute(() -> dispatch(payload));
+            dispatch(payloadFactory.build(raw));
         } catch (Throwable t) {
-            // Queue saturated or executor rejected: drop silently.
-            logger.warn("Payload dropped: dispatcher unavailable (" + t.getClass().getSimpleName() + ").");
+            logger.error("Failed to build Treblle payload.", t);
         }
     }
 

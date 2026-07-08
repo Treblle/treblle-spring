@@ -3,7 +3,6 @@ package com.treblle.springboot.core;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.treblle.springboot.collector.ErrorCollector;
 import com.treblle.springboot.collector.RawRequestData;
 import com.treblle.springboot.config.TreblleProperties;
 import com.treblle.springboot.core.model.Data;
@@ -12,7 +11,6 @@ import com.treblle.springboot.core.model.RequestInfo;
 import com.treblle.springboot.core.model.ResponseInfo;
 import com.treblle.springboot.core.model.ServerInfo;
 import com.treblle.springboot.core.model.TrebllePayload;
-import com.treblle.springboot.metadata.TreblleMetadata;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
@@ -26,7 +24,9 @@ import java.util.Set;
 
 /**
  * Framework-agnostic factory that normalizes raw request/response data into a schema-valid
- * {@link TrebllePayload}. Pure: no Spring imports, unit-testable in isolation.
+ * {@link TrebllePayload}. Pure: no Spring imports, no thread-local access, unit-testable in
+ * isolation. Everything it needs — including the errors and metadata snapshots — is carried on the
+ * {@link RawRequestData} it receives, so it can safely run off the request thread.
  */
 public class PayloadFactory {
 
@@ -69,11 +69,11 @@ public class PayloadFactory {
         data.setLanguage(buildLanguage());
         data.setRequest(buildRequest(raw));
         data.setResponse(buildResponse(raw));
-        data.setErrors(ErrorCollector.snapshot());
+        data.setErrors(raw.getErrors());
         data.setQueries(Collections.emptyList());
 
-        Map<String, Object> metadata = TreblleMetadata.snapshot();
-        if (!metadata.isEmpty()) {
+        Map<String, Object> metadata = raw.getMetadata();
+        if (metadata != null && !metadata.isEmpty()) {
             data.setMetadata(metadata);
         }
 
@@ -116,7 +116,8 @@ public class PayloadFactory {
         maskingService.maskStringMap(request.getHeaders());
         maskingService.maskStringMap(request.getQuery());
 
-        request.setBody(buildBody(raw.getRequestBody(), raw.getRequestContentType(), raw.getUploadedFiles()));
+        request.setBody(buildBody(raw.getRequestBody(), raw.getRequestContentType(),
+                raw.getRequestContentEncoding(), raw.getUploadedFiles()));
         return request;
     }
 
@@ -130,15 +131,18 @@ public class PayloadFactory {
         byte[] body = raw.getResponseBody();
         long size = raw.getResponseSize() > 0 ? raw.getResponseSize() : (body == null ? 0 : body.length);
         response.setSize(size);
-        response.setBody(buildBody(body, raw.getResponseContentType(), Collections.emptyList()));
+        response.setBody(buildBody(body, raw.getResponseContentType(),
+                raw.getResponseContentEncoding(), Collections.emptyList()));
         return response;
     }
 
     /**
      * Turns a raw body into schema-valid JSON, honoring all edge cases:
-     * file uploads, oversized bodies, form/urlencoded conversion, and non-JSON payloads.
+     * file uploads, compressed bodies, oversized bodies, form/urlencoded conversion, and non-JSON
+     * payloads.
      */
-    private Object buildBody(byte[] body, String contentType, List<RawRequestData.FilePart> files) {
+    private Object buildBody(byte[] body, String contentType, String contentEncoding,
+                             List<RawRequestData.FilePart> files) {
         try {
             boolean hasFiles = files != null && !files.isEmpty();
             String ct = contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
@@ -146,6 +150,14 @@ public class PayloadFactory {
             // Never capture file uploads — describe them instead.
             if (hasFiles || ct.startsWith("multipart/")) {
                 return describeFiles(files);
+            }
+
+            // Compressed bodies aren't decodable text; describe instead of reporting "invalid JSON".
+            if (isCompressed(contentEncoding)) {
+                ObjectNode message = objectMapper.createObjectNode();
+                message.put("message", "Body omitted (compressed: "
+                        + contentEncoding.trim().toLowerCase(Locale.ROOT) + ").");
+                return message;
             }
 
             if (body == null || body.length == 0) {
@@ -200,30 +212,17 @@ public class PayloadFactory {
 
     private ObjectNode parseUrlEncoded(String raw) {
         ObjectNode node = objectMapper.createObjectNode();
-        if (raw == null || raw.isEmpty()) {
-            return node;
-        }
-        String[] pairs = raw.split("&");
-        for (String pair : pairs) {
-            if (pair.isEmpty()) {
-                continue;
-            }
-            int eq = pair.indexOf('=');
-            String key = eq >= 0 ? pair.substring(0, eq) : pair;
-            String value = eq >= 0 ? pair.substring(eq + 1) : "";
-            key = urlDecode(key);
-            value = urlDecode(value);
-            node.put(key, value); // last value wins
-        }
+        UrlEncodedParser.parse(raw).forEach(node::put); // last value wins
         return (ObjectNode) maskingService.maskBody(node);
     }
 
-    private String urlDecode(String s) {
-        try {
-            return java.net.URLDecoder.decode(s, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            return s;
+    private boolean isCompressed(String contentEncoding) {
+        if (contentEncoding == null || contentEncoding.isBlank()) {
+            return false;
         }
+        String enc = contentEncoding.toLowerCase(Locale.ROOT);
+        return enc.contains("gzip") || enc.contains("deflate")
+                || enc.contains("br") || enc.contains("compress") || enc.contains("zstd");
     }
 
     private ObjectNode invalidJson() {

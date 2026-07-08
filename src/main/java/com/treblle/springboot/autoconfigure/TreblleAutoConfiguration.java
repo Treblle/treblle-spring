@@ -82,8 +82,9 @@ public class TreblleAutoConfiguration {
     public TreblleClient treblleClient(TreblleProperties properties,
                                        TreblleLogger logger,
                                        CircuitBreaker circuitBreaker,
-                                       ObjectMapper objectMapper) {
-        return new TreblleClient(properties, objectMapper, logger, circuitBreaker);
+                                       ObjectMapper objectMapper,
+                                       PayloadFactory payloadFactory) {
+        return new TreblleClient(properties, objectMapper, logger, circuitBreaker, payloadFactory);
     }
 
     @Bean
@@ -104,7 +105,6 @@ public class TreblleAutoConfiguration {
     @ConditionalOnMissingBean
     public FilterRegistrationBean<TreblleFilter> treblleFilterRegistration(
             TreblleProperties properties,
-            PayloadFactory payloadFactory,
             TreblleClient client,
             PathMatcher pathMatcher,
             TreblleLogger logger) {
@@ -115,7 +115,7 @@ public class TreblleAutoConfiguration {
                     + "'treblle.api-key' are missing. The SDK will not send any data.");
         }
 
-        TreblleFilter filter = new TreblleFilter(properties, payloadFactory, client, pathMatcher, logger, active);
+        TreblleFilter filter = new TreblleFilter(properties, client, pathMatcher, logger, active);
         FilterRegistrationBean<TreblleFilter> registration = new FilterRegistrationBean<>(filter);
         registration.addUrlPatterns("/*");
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);

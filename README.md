@@ -76,7 +76,7 @@ export TREBLLE_API_KEY=YOUR_API_KEY
 | `treblle.sdk-token` | `TREBLLE_SDK_TOKEN` | String | **Yes** | — | SDK Token from the Treblle dashboard. Sent as `sdk_token` and as the `x-api-key` header. |
 | `treblle.api-key` | `TREBLLE_API_KEY` | String | **Yes** | — | API Key from the Treblle dashboard. Sent as `api_key`. |
 | `treblle.debug` | `TREBLLE_DEBUG` | boolean | No | `false` | Enables verbose local logging of all SDK activity. |
-| `treblle.masked-keywords` | `TREBLLE_MASKED_KEYWORDS` | List&lt;String&gt; | No | `[]` | Keys whose values are masked before sending. **If empty, masking is skipped entirely.** |
+| `treblle.masked-keywords` | `TREBLLE_MASKED_KEYWORDS` | List&lt;String&gt; | No | `password, pwd, secret, password_confirmation, cc, card_number, ccv, ssn, authorization, api_key` | Keys whose values are masked before sending. **Masked by default** — override to customize, or set to empty to disable masking entirely. |
 | `treblle.excluded-paths` | `TREBLLE_EXCLUDED_PATHS` | List&lt;String&gt; | No | `[]` | Route paths the SDK must not track. Exact paths and `/prefix/*` wildcards. Case-sensitive. |
 | `treblle.ingress-endpoint` | `TREBLLE_INGRESS_ENDPOINT` | String | No | `https://ingress.treblle.com` | Treblle Ingress URL. Point at a regional or self-hosted endpoint. |
 | `treblle.enabled` | `TREBLLE_ENABLED` | boolean | No | `true` | Master switch. When `false`, the SDK sends nothing. |
@@ -110,10 +110,13 @@ treblle.excluded-paths=/health,/actuator/*,/admin/*
 Masking happens entirely on your server, before any data is sent to Treblle. The
 `treblle.masked-keywords` list drives it:
 
-- Only keys listed in `masked-keywords` are masked. **If the list is empty, masking is skipped
-  entirely** (a warning is logged in debug mode).
+- **Secure by default.** A standard set of sensitive keys (`password`, `pwd`, `secret`,
+  `password_confirmation`, `cc`, `card_number`, `ccv`, `ssn`, `authorization`, `api_key`) is masked
+  out of the box. Override `treblle.masked-keywords` to customize it, or set it to empty to disable
+  masking entirely (a warning is logged in debug mode when masking is off).
 - Matching is **case-insensitive** and applies to request bodies, response bodies, request headers,
-  and response headers.
+  and response headers. Query-string values are masked in the captured `query` map, and the raw URL
+  is recorded without its query string so no unmasked query value can leak through it.
 - Each character of a matched value is replaced with `*`, preserving the original length
   (`"secret123"` → `"*********"`).
 - Nested objects and arrays are handled recursively; array items are masked individually while the

@@ -6,6 +6,7 @@ import com.treblle.springboot.autoconfigure.TreblleAutoConfiguration;
 import com.treblle.springboot.collector.ErrorCollector;
 import com.treblle.springboot.collector.RawRequestData;
 import com.treblle.springboot.config.TreblleProperties;
+import com.treblle.springboot.core.model.ErrorInfo;
 import com.treblle.springboot.core.model.TrebllePayload;
 import com.treblle.springboot.metadata.TreblleMetadata;
 import org.junit.jupiter.api.AfterEach;
@@ -152,15 +153,26 @@ class PayloadFactoryTest {
 
     @Test
     void errorsAndMetadataIncluded() throws Exception {
-        ErrorCollector.record("onException", new IllegalStateException("boom"));
-        TreblleMetadata.add("tenant", "acme");
         RawRequestData raw = baseRequest();
+        raw.setErrors(List.of(new ErrorInfo("onException", "UNHANDLED_EXCEPTION", "boom", "Foo.java", 42)));
+        raw.setMetadata(Map.of("tenant", "acme"));
         TrebllePayload payload = factory(List.of()).build(raw);
         JsonNode node = mapper.valueToTree(payload);
         assertSchemaValid(node);
         assertEquals("onException", node.at("/data/errors/0/source").asText());
         assertEquals("boom", node.at("/data/errors/0/message").asText());
         assertEquals("acme", node.at("/data/metadata/tenant").asText());
+    }
+
+    @Test
+    void compressedResponseBodyDescribedNotParsed() throws Exception {
+        RawRequestData raw = baseRequest();
+        raw.setResponseContentEncoding("gzip");
+        raw.setResponseBody(new byte[]{0x1f, (byte) 0x8b, 0x08, 0x00}); // gzip magic bytes
+        TrebllePayload payload = factory(List.of()).build(raw);
+        JsonNode node = mapper.valueToTree(payload);
+        assertSchemaValid(node);
+        assertTrue(node.at("/data/response/body/message").asText().toLowerCase().contains("compressed"));
     }
 
     @Test

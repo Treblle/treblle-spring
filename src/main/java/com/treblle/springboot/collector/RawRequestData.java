@@ -1,6 +1,9 @@
 package com.treblle.springboot.collector;
 
+import com.treblle.springboot.core.model.ErrorInfo;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +28,22 @@ public class RawRequestData {
     private Map<String, String> query = new LinkedHashMap<>();
     private byte[] requestBody;
     private String requestContentType;
+    private String requestContentEncoding;
     private List<FilePart> uploadedFiles = new ArrayList<>();
 
     private int statusCode = 200;
     private Map<String, String> responseHeaders = new LinkedHashMap<>();
     private byte[] responseBody;
     private String responseContentType;
+    private String responseContentEncoding;
     private long responseSize;
     private double loadTimeMs;
+
+    /** Errors observed during the request, snapshotted on the request thread. */
+    private List<ErrorInfo> errors = Collections.emptyList();
+
+    /** Custom metadata attached during the request, snapshotted on the request thread. */
+    private Map<String, Object> metadata = Collections.emptyMap();
 
     public String getMethod() {
         return method;
@@ -130,6 +141,14 @@ public class RawRequestData {
         this.requestContentType = requestContentType;
     }
 
+    public String getRequestContentEncoding() {
+        return requestContentEncoding;
+    }
+
+    public void setRequestContentEncoding(String requestContentEncoding) {
+        this.requestContentEncoding = requestContentEncoding;
+    }
+
     public List<FilePart> getUploadedFiles() {
         return uploadedFiles;
     }
@@ -170,6 +189,14 @@ public class RawRequestData {
         this.responseContentType = responseContentType;
     }
 
+    public String getResponseContentEncoding() {
+        return responseContentEncoding;
+    }
+
+    public void setResponseContentEncoding(String responseContentEncoding) {
+        this.responseContentEncoding = responseContentEncoding;
+    }
+
     public long getResponseSize() {
         return responseSize;
     }
@@ -184,6 +211,22 @@ public class RawRequestData {
 
     public void setLoadTimeMs(double loadTimeMs) {
         this.loadTimeMs = loadTimeMs;
+    }
+
+    public List<ErrorInfo> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(List<ErrorInfo> errors) {
+        this.errors = errors == null ? Collections.emptyList() : errors;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata == null ? Collections.emptyMap() : metadata;
     }
 
     /** Describes a single uploaded file without capturing its contents. */

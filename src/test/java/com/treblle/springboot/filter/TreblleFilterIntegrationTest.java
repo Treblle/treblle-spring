@@ -1,5 +1,10 @@
 package com.treblle.springboot.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.treblle.springboot.collector.RawRequestData;
+import com.treblle.springboot.config.TreblleProperties;
+import com.treblle.springboot.core.MaskingService;
+import com.treblle.springboot.core.PayloadFactory;
 import com.treblle.springboot.core.model.TrebllePayload;
 import com.treblle.springboot.transport.TreblleClient;
 import org.junit.jupiter.api.Test;
@@ -14,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
@@ -39,15 +45,31 @@ class TreblleFilterIntegrationTest {
     @Autowired
     private TestRestTemplate rest;
 
+    /**
+     * Builds a payload from captured raw data exactly as the transport would off-thread, so these
+     * tests exercise the real filter capture + factory masking pipeline end-to-end.
+     */
+    private TrebllePayload buildPayload(RawRequestData raw, String... maskedKeywords) {
+        TreblleProperties props = new TreblleProperties();
+        props.setSdkToken("test-token");
+        props.setApiKey("test-key");
+        PayloadFactory factory = new PayloadFactory(new ObjectMapper(),
+                new MaskingService(List.of(maskedKeywords)), props, "spring-boot", 30);
+        return factory.build(raw);
+    }
+
+    private RawRequestData captureRaw() {
+        ArgumentCaptor<RawRequestData> captor = ArgumentCaptor.forClass(RawRequestData.class);
+        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
+                verify(client, atLeastOnce()).send(captor.capture()));
+        return captor.getValue();
+    }
+
     @Test
     void capturesGetRequestAndSendsPayload() {
         rest.getForEntity("/api/users", String.class);
 
-        ArgumentCaptor<TrebllePayload> captor = ArgumentCaptor.forClass(TrebllePayload.class);
-        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
-                verify(client, atLeastOnce()).send(captor.capture()));
-
-        TrebllePayload payload = captor.getValue();
+        TrebllePayload payload = buildPayload(captureRaw());
         assert payload.getData().getRequest().getMethod().equals("GET");
         assert payload.getData().getResponse().getCode() == 200;
         assert payload.getSdk().equals("spring-boot");
@@ -60,13 +82,25 @@ class TreblleFilterIntegrationTest {
         HttpEntity<String> entity = new HttpEntity<>("{\"password\":\"secret\",\"user\":\"alice\"}", headers);
         rest.exchange("/api/echo", HttpMethod.POST, entity, String.class);
 
-        ArgumentCaptor<TrebllePayload> captor = ArgumentCaptor.forClass(TrebllePayload.class);
-        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
-                verify(client, atLeastOnce()).send(captor.capture()));
-
-        String body = captor.getValue().getData().getRequest().getBody().toString();
+        TrebllePayload payload = buildPayload(captureRaw(), "password", "authorization");
+        String body = payload.getData().getRequest().getBody().toString();
         assert body.contains("******") : "expected masked value in: " + body;
         assert !body.contains("secret") : "raw secret leaked in: " + body;
+    }
+
+    @Test
+    void queryParamsExcludedFromUrl() {
+        rest.getForEntity("/api/users?token=supersecret&page=2", String.class);
+
+        RawRequestData raw = captureRaw();
+        assert !raw.getUrl().contains("supersecret") : "raw secret leaked in url: " + raw.getUrl();
+        assert !raw.getUrl().contains("?") : "query string not stripped from url: " + raw.getUrl();
+        assert raw.getQueryParams().containsKey("token") : "query params not captured separately";
+
+        // And the sensitive query value is masked in the built payload's query map.
+        TrebllePayload payload = buildPayload(raw, "token");
+        assert payload.getData().getRequest().getQuery().get("token").equals("***********")
+                : "expected masked token, got: " + payload.getData().getRequest().getQuery().get("token");
     }
 
     @Test
@@ -80,11 +114,8 @@ class TreblleFilterIntegrationTest {
     void hostErrorIsCapturedAndResponseStillSent() {
         rest.getForEntity("/api/boom", String.class); // returns 500 to the client
 
-        ArgumentCaptor<TrebllePayload> captor = ArgumentCaptor.forClass(TrebllePayload.class);
-        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
-                verify(client, atLeastOnce()).send(captor.capture()));
-
-        TrebllePayload payload = captor.getValue();
+        RawRequestData raw = captureRaw();
+        TrebllePayload payload = buildPayload(raw);
         assert !payload.getData().getErrors().isEmpty() : "expected captured error";
         assert payload.getData().getResponse().getCode() >= 500
                 : "expected 5xx, got " + payload.getData().getResponse().getCode();

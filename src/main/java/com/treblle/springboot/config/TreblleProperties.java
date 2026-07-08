@@ -25,8 +25,17 @@ public class TreblleProperties {
     /** Enables verbose local logging of all SDK activity. */
     private boolean debug = false;
 
+    /**
+     * Default keys masked out of the box. Secure-by-default: sensitive values never leave the server
+     * unless the caller explicitly clears this list. Override {@code treblle.masked-keywords} to
+     * customize; set it to empty to disable masking entirely.
+     */
+    public static final List<String> DEFAULT_MASKED_KEYWORDS = List.of(
+            "password", "pwd", "secret", "password_confirmation", "cc", "card_number",
+            "ccv", "ssn", "authorization", "api_key");
+
     /** Keys whose values are masked before sending. If empty, masking is skipped entirely. */
-    private List<String> maskedKeywords = new ArrayList<>();
+    private List<String> maskedKeywords = new ArrayList<>(DEFAULT_MASKED_KEYWORDS);
 
     /** Route paths the SDK must not track. Supports exact paths and {@code /prefix/*} wildcards. Case-sensitive. */
     private List<String> excludedPaths = new ArrayList<>();
