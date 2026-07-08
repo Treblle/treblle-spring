@@ -1,25 +1,25 @@
-# Treblle — Enterprise Runtime Intelligence Platform
+# Treblle - Runtime Intelligence Platform
 
 [Website](https://treblle.com/) • [Documentation](https://docs.treblle.com/) • [Pricing](https://treblle.com/pricing)
 
 Discover and secure your APIs and Agents across any cloud, gateway, or technology.
+
+---
 
 ## Treblle Spring Boot SDK
 
 The Treblle Spring Boot SDK is a Spring Boot auto-configuration starter that captures every API
 request and response on your application, masks sensitive data before anything leaves your server,
 and ships the data to Treblle asynchronously. All expensive work happens after the response has been
-flushed to the client, so the SDK adds no measurable latency and — by design — can never throw into
-or break your API.
+flushed to the client, so the SDK adds no measurable latency and by design - can never break your API.
 
 ## Requirements
 
-- Java 17 or newer (tested on JDK 17 and 21)
+- Java 17 or newer
 - Spring Boot 3.x (Spring MVC / Servlet stack)
-- A Treblle account with an **SDK Token** and **API Key** from the [Treblle dashboard](https://app.treblle.com)
+- A Treblle account with an **SDK Token** and **API Key** from the [Treblle dashboard](https://treblle.com)
 
-> Spring Boot 2.x is not supported: it predates the Jakarta (`jakarta.*`) servlet namespace this SDK
-> is built on. WebFlux (reactive) applications are not supported in this release.
+> For Spring Boot 2.x support as well as older Java version visit the v2 branch.
 
 ## Installation
 
@@ -41,7 +41,7 @@ Or, for Gradle (`build.gradle`):
 implementation 'com.treblle:treblle-spring-boot-starter:3.0.0'
 ```
 
-That is all the wiring you need — the starter auto-configures itself. There are no filters, beans,
+That is all the wiring you need - the starter auto-configures itself. There are no filters, beans,
 or annotations to register manually.
 
 ### 2. Configure the SDK
@@ -73,10 +73,10 @@ export TREBLLE_API_KEY=YOUR_API_KEY
 
 | Property | Env var | Type | Required | Default | Description |
 |---|---|---|---|---|---|
-| `treblle.sdk-token` | `TREBLLE_SDK_TOKEN` | String | **Yes** | — | SDK Token from the Treblle dashboard. Sent as `sdk_token` and as the `x-api-key` header. |
-| `treblle.api-key` | `TREBLLE_API_KEY` | String | **Yes** | — | API Key from the Treblle dashboard. Sent as `api_key`. |
+| `treblle.sdk-token` | `TREBLLE_SDK_TOKEN` | String | **Yes** | - | SDK Token from the Treblle dashboard. Sent as `sdk_token` and as the `x-api-key` header. |
+| `treblle.api-key` | `TREBLLE_API_KEY` | String | **Yes** | - | API Key from the Treblle dashboard. Sent as `api_key`. |
 | `treblle.debug` | `TREBLLE_DEBUG` | boolean | No | `false` | Enables verbose local logging of all SDK activity. |
-| `treblle.masked-keywords` | `TREBLLE_MASKED_KEYWORDS` | List&lt;String&gt; | No | `password, pwd, secret, password_confirmation, cc, card_number, ccv, ssn, authorization, api_key` | Keys whose values are masked before sending. **Masked by default** — override to customize, or set to empty to disable masking entirely. |
+| `treblle.masked-keywords` | `TREBLLE_MASKED_KEYWORDS` | List&lt;String&gt; | No | `password, pwd, secret, password_confirmation, cc, card_number, ccv, ssn, authorization, api_key` | Keys whose values are masked before sending. **Masked by default** - override to customize, or set to empty to disable masking entirely. |
 | `treblle.excluded-paths` | `TREBLLE_EXCLUDED_PATHS` | List&lt;String&gt; | No | `[]` | Route paths the SDK must not track. Exact paths and `/prefix/*` wildcards. Case-sensitive. |
 | `treblle.ingress-endpoint` | `TREBLLE_INGRESS_ENDPOINT` | String | No | `https://ingress.treblle.com` | Treblle Ingress URL. Point at a regional or self-hosted endpoint. |
 | `treblle.enabled` | `TREBLLE_ENABLED` | boolean | No | `true` | Master switch. When `false`, the SDK sends nothing. |
@@ -99,11 +99,11 @@ treblle.excluded-paths=/health,/actuator/*,/admin/*
 ### 3. Verify it works
 
 1. Start your application and make a request to any of your API endpoints.
-2. Open your API in the [Treblle dashboard](https://app.treblle.com) — the request should appear
+2. Open your API in the [Treblle dashboard](https://app.treblle.com) - the request should appear
    within a few seconds.
 3. If nothing shows up, set `treblle.debug=true` and restart. The SDK will log its resolved
    configuration, initialization status, each captured request, every outgoing send, and Treblle's
-   responses under the `com.treblle` logger — enough to pinpoint any configuration problem.
+   responses under the `com.treblle` logger - enough to pinpoint any configuration problem.
 
 ## Data masking
 
@@ -202,18 +202,8 @@ When enabled, the SDK logs (under the `com.treblle` logger):
 - Every outgoing send to Treblle, Treblle's responses, circuit-breaker state transitions, dropped
   payloads, and any exceptions or HTTP errors that occur while sending.
 
-If data isn't appearing in your dashboard, turn on debug mode first — the logs will tell you whether
+If data isn't appearing in your dashboard, turn on debug mode first - the logs will tell you whether
 the SDK is disabled, whether your credentials are set, and whether Ingress is responding.
-
-## Running the tests
-
-```bash
-mvn verify
-```
-
-The suite covers configuration handling, masking, payload building and schema conformance, path
-exclusion, transport safety, and the circuit breaker. All tests run against a mocked transport and
-never call the real Treblle Ingress.
 
 ## Support
 
